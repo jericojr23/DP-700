@@ -1,0 +1,4 @@
+interface:
+  display_name: "DP-700 Quiz Bank"
+  short_description: "Create DP-700 quizzes and track weak areas"
+  default_prompt: "Use $dp700-quiz-bank to quiz me, track my results, and prioritize questions I need to review."

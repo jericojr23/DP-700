@@ -203,6 +203,15 @@ cython_debug/
 # Temporary file for partial code execution
 tempCodeRunnerFile.py
 
+# Node / Vite
+node_modules/
+apps/quiz/dist/
+apps/quiz/.vite/
+*.tsbuildinfo
+
+# Personal quiz progress
+docs/quiz_progress.md
+
 # Ruff stuff:
 .ruff_cache/
 
