@@ -57,4 +57,5 @@ export interface SessionResult {
   selectedAnswer: string;
   correct: boolean;
   confidence: Confidence;
+  timedOut: boolean;
 }

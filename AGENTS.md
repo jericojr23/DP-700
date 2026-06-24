@@ -8,6 +8,13 @@ This repository is an independent, local-first DP-700 learning project. Keep all
 
 Read `DEVELOPMENT_GUIDE.md` before making structural changes. For question-bank work, also read `.agents/skills/dp700-quiz-bank/SKILL.md` completely and follow its workflow.
 
+## Runtime Environment
+
+- Treat this repository as a WSL Ubuntu project regardless of where the worktree is mounted.
+- Run repository commands with Linux-native tools installed inside WSL. For Node.js work, `node`, `npm`, and `npx` must resolve to WSL binaries, not Windows executables or paths under `/mnt/c/Program Files/nodejs`.
+- In `apps/quiz`, use the version in `.nvmrc` through `nvm use` (or `nvm install` when setup is required), and install dependencies from inside WSL.
+- Never use Windows `node.exe`, `npm.exe`, or Windows-installed `node_modules` as a workaround from WSL. If the WSL-native runtime is unavailable, report the setup blocker instead of bypassing required validation.
+
 ## Question Bank Invariants
 
 Treat these rules as non-negotiable unless the user explicitly requests a repository migration:

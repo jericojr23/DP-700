@@ -15,10 +15,10 @@ curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.4/install.sh | bash
 source ~/.bashrc
 ```
 
-Then install the project runtime and dependencies:
+Then, from the repository root, install the project runtime and dependencies:
 
 ```bash
-cd /mnt/c/Users/jeric/Documents/git_repositories/DP-700/apps/quiz
+cd apps/quiz
 nvm install
 nvm use
 npm install
@@ -63,3 +63,7 @@ React practice interface
 The parser fails when tracker links, metadata, coverage totals, required question sections, or answer mappings are inconsistent. The application never creates a second hand-maintained question bank.
 
 Browser progress is stored locally under `dp700-practice-progress-v1`. Clearing site data or choosing **Clear history** resets it.
+
+Practice sessions can be untimed or use a 30, 60, or 90 second countdown per question. An unanswered question is recorded as incorrect when its timer expires.
+
+Question order is shuffled at the start of every session. Review mode includes questions whose latest answer was incorrect and removes them after a correct answer.

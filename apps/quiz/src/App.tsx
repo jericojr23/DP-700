@@ -1,4 +1,12 @@
-import { useEffect, useMemo, useState, type CSSProperties, type ReactNode } from 'react';
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type CSSProperties,
+  type ReactNode,
+} from 'react';
 import questionBank from 'virtual:question-bank';
 import type {
   Confidence,
@@ -12,6 +20,7 @@ const STORAGE_KEY = 'dp700-practice-progress-v1';
 const ALL_DOMAINS = 'All domains';
 const ALL_DIFFICULTIES = 'All levels';
 const confidenceLevels: Exclude<Confidence, 'Not recorded'>[] = ['Low', 'Medium', 'High'];
+const timerOptions = [0, 30, 60, 90];
 
 type View = 'home' | 'quiz' | 'summary';
 
@@ -33,14 +42,14 @@ function shuffled<T>(items: T[]): T[] {
   return copy;
 }
 
+function formatTime(seconds: number): string {
+  const minutes = Math.floor(seconds / 60);
+  const remainingSeconds = seconds % 60;
+  return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
+}
+
 function needsReview(entry?: ProgressEntry): boolean {
-  if (!entry) return false;
-  const accuracy = entry.correct / entry.attempts;
-  return (
-    entry.lastResult === 'incorrect' ||
-    entry.lastConfidence === 'Low' ||
-    (entry.attempts >= 2 && accuracy < 0.7)
-  );
+  return entry?.lastResult === 'incorrect';
 }
 
 function RichText({ children }: { children: string }) {
@@ -91,12 +100,22 @@ function BookIcon() {
   );
 }
 
+function ClockIcon() {
+  return (
+    <svg viewBox="0 0 20 20" aria-hidden="true">
+      <circle cx="10" cy="10" r="7" fill="none" stroke="currentColor" strokeWidth="1.6" />
+      <path d="M10 6v4l2.7 1.7" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+    </svg>
+  );
+}
+
 function App() {
   const [view, setView] = useState<View>('home');
   const [domain, setDomain] = useState(ALL_DOMAINS);
   const [difficulty, setDifficulty] = useState<string>(ALL_DIFFICULTIES);
   const [reviewOnly, setReviewOnly] = useState(false);
   const [questionCount, setQuestionCount] = useState(5);
+  const [timerSeconds, setTimerSeconds] = useState(0);
   const [progress, setProgress] = useState<Record<string, ProgressEntry>>(readProgress);
   const [sessionQuestions, setSessionQuestions] = useState<Question[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -104,6 +123,11 @@ function App() {
   const [confidence, setConfidence] = useState<Exclude<Confidence, 'Not recorded'> | ''>('');
   const [submitted, setSubmitted] = useState(false);
   const [sessionResults, setSessionResults] = useState<SessionResult[]>([]);
+  const [timeRemaining, setTimeRemaining] = useState(0);
+  const [timerDeadline, setTimerDeadline] = useState<number | null>(null);
+  const [timedOut, setTimedOut] = useState(false);
+  const completionLocked = useRef(false);
+  const previousSessionOrder = useRef<string[]>([]);
 
   useEffect(() => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(progress));
@@ -130,29 +154,47 @@ function App() {
   const accuracy = totalAttempts ? Math.round((totalCorrect / totalAttempts) * 100) : 0;
   const attemptedQuestions = Object.keys(progress).length;
   const largestDomain = Math.max(...questionBank.coverage.domains.map((item) => item.total));
+  const currentQuestion = sessionQuestions[currentIndex];
 
   const startSession = (pool: Question[] = filteredQuestions) => {
     if (pool.length === 0) return;
     const count = Math.min(questionCount, pool.length);
-    setSessionQuestions(shuffled(pool).slice(0, count));
+    let nextQuestions = shuffled(pool).slice(0, count);
+    const repeatsPreviousOrder =
+      nextQuestions.length > 1 &&
+      nextQuestions.length === previousSessionOrder.current.length &&
+      nextQuestions.every(
+        (question, index) => question.id === previousSessionOrder.current[index],
+      );
+
+    if (repeatsPreviousOrder) {
+      nextQuestions = [...nextQuestions.slice(1), nextQuestions[0]];
+    }
+
+    previousSessionOrder.current = nextQuestions.map((question) => question.id);
+    setSessionQuestions(nextQuestions);
     setCurrentIndex(0);
     setSelectedAnswer('');
     setConfidence('');
     setSubmitted(false);
     setSessionResults([]);
+    setTimeRemaining(timerSeconds);
+    setTimerDeadline(timerSeconds > 0 ? Date.now() + timerSeconds * 1000 : null);
+    setTimedOut(false);
+    completionLocked.current = false;
     setView('quiz');
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  const currentQuestion = sessionQuestions[currentIndex];
   const currentIsCorrect = Boolean(
     currentQuestion && selectedAnswer === currentQuestion.correctAnswer,
   );
 
-  const submitAnswer = () => {
-    if (!currentQuestion || !selectedAnswer || submitted) return;
-    const recordedConfidence: Confidence = confidence || 'Not recorded';
-    const correct = selectedAnswer === currentQuestion.correctAnswer;
+  const completeAnswer = useCallback((answer: string, didTimeOut = false) => {
+    if (!currentQuestion || completionLocked.current || (!answer && !didTimeOut)) return;
+    completionLocked.current = true;
+    const recordedConfidence: Confidence = didTimeOut ? 'Not recorded' : confidence || 'Not recorded';
+    const correct = answer === currentQuestion.correctAnswer;
 
     setProgress((current) => {
       const previous = current[currentQuestion.id];
@@ -171,13 +213,41 @@ function App() {
       ...current,
       {
         questionId: currentQuestion.id,
-        selectedAnswer,
+        selectedAnswer: answer,
         correct,
         confidence: recordedConfidence,
+        timedOut: didTimeOut,
       },
     ]);
+    setTimerDeadline(null);
+    setTimedOut(didTimeOut);
     setSubmitted(true);
-  };
+  }, [confidence, currentQuestion]);
+
+  useEffect(() => {
+    if (view !== 'quiz' || submitted || timerDeadline === null) return;
+
+    const updateTimer = () => {
+      setTimeRemaining(Math.max(0, Math.ceil((timerDeadline - Date.now()) / 1000)));
+    };
+    updateTimer();
+    const intervalId = window.setInterval(updateTimer, 250);
+    return () => window.clearInterval(intervalId);
+  }, [submitted, timerDeadline, view]);
+
+  useEffect(() => {
+    if (
+      view === 'quiz' &&
+      currentQuestion &&
+      !submitted &&
+      timerDeadline !== null &&
+      timeRemaining === 0
+    ) {
+      completeAnswer('', true);
+    }
+  }, [completeAnswer, currentQuestion, submitted, timeRemaining, timerDeadline, view]);
+
+  const submitAnswer = () => completeAnswer(selectedAnswer);
 
   const moveNext = () => {
     if (currentIndex === sessionQuestions.length - 1) {
@@ -187,6 +257,10 @@ function App() {
       setSelectedAnswer('');
       setConfidence('');
       setSubmitted(false);
+      setTimeRemaining(timerSeconds);
+      setTimerDeadline(timerSeconds > 0 ? Date.now() + timerSeconds * 1000 : null);
+      setTimedOut(false);
+      completionLocked.current = false;
     }
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
@@ -194,6 +268,10 @@ function App() {
   const returnHome = () => {
     setView('home');
     setSessionQuestions([]);
+    setTimerDeadline(null);
+    setTimeRemaining(0);
+    setTimedOut(false);
+    completionLocked.current = true;
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
@@ -208,6 +286,7 @@ function App() {
     .map((result) => questionBank.questions.find((question) => question.id === result.questionId))
     .filter((question): question is Question => Boolean(question));
   const sessionScore = sessionResults.filter((result) => result.correct).length;
+  const timedOutCount = sessionResults.filter((result) => result.timedOut).length;
 
   return (
     <div className="app-shell">
@@ -308,6 +387,19 @@ function App() {
                     <option value={questionBank.coverage.total}>All available</option>
                   </select>
                 </label>
+                <label>
+                  <span>Question timer</span>
+                  <select
+                    value={timerSeconds}
+                    onChange={(event) => setTimerSeconds(Number(event.target.value))}
+                  >
+                    {timerOptions.map((seconds) => (
+                      <option key={seconds} value={seconds}>
+                        {seconds === 0 ? 'Untimed' : `${seconds} seconds`}
+                      </option>
+                    ))}
+                  </select>
+                </label>
               </div>
 
               <label className={`review-toggle ${reviewOnly ? 'active' : ''}`}>
@@ -319,7 +411,7 @@ function App() {
                 <span className="toggle-control" aria-hidden="true"><span /></span>
                 <span>
                   <strong>Review mode</strong>
-                  <small>Only questions previously missed or answered with low confidence</small>
+                  <small>Only questions whose latest answer was incorrect</small>
                 </span>
                 <b>{reviewIds.size}</b>
               </label>
@@ -374,7 +466,18 @@ function App() {
           <div className="quiz-view">
             <div className="quiz-topbar">
               <button className="text-button" type="button" onClick={returnHome}>← Exit session</button>
-              <span>Question {currentIndex + 1} of {sessionQuestions.length}</span>
+              <div className="quiz-status">
+                <span>Question {currentIndex + 1} of {sessionQuestions.length}</span>
+                {timerSeconds > 0 && (
+                  <span
+                    className={`question-timer ${!submitted && timeRemaining <= 10 ? 'urgent' : ''}`}
+                    role="timer"
+                    aria-label={`${timeRemaining} seconds remaining`}
+                  >
+                    <ClockIcon /> {formatTime(timeRemaining)}
+                  </span>
+                )}
+              </div>
             </div>
             <div className="session-progress" aria-hidden="true">
               <span style={{ width: `${((currentIndex + (submitted ? 1 : 0)) / sessionQuestions.length) * 100}%` }} />
@@ -455,6 +558,7 @@ function App() {
                     <MarkIcon>{currentIsCorrect ? <CheckIcon /> : '×'}</MarkIcon>
                     <div>
                       <span>{currentIsCorrect ? 'Correct' : 'Not quite'}</span>
+                      {timedOut && <span className="timeout-label">Time expired</span>}
                       <h2>{currentQuestion.correctAnswer}. {currentQuestion.correctAnswerText}</h2>
                     </div>
                   </div>
@@ -502,6 +606,12 @@ function App() {
                   ? 'Every answer landed. Keep these questions in rotation for retention.'
                   : `${missedQuestions.length} question${missedQuestions.length === 1 ? '' : 's'} moved into your review queue.`}
               </p>
+
+              {timedOutCount > 0 && (
+                <p className="timeout-summary">
+                  <ClockIcon /> {timedOutCount} timed out
+                </p>
+              )}
 
               {missedQuestions.length > 0 && (
                 <div className="missed-list">

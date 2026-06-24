@@ -9,7 +9,7 @@ The React application lives in [`apps/quiz`](apps/quiz). It reads the standalone
 From WSL Ubuntu:
 
 ```bash
-cd /mnt/c/Users/jeric/Documents/git_repositories/DP-700/apps/quiz
+cd apps/quiz
 nvm install
 nvm use
 npm install

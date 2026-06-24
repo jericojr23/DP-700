@@ -7,6 +7,10 @@ description: Create, verify, review, and administer original Microsoft DP-700 pr
 
 Maintain each `questions/DP700-XXX.md` file as the source of truth for that question. Maintain coverage totals and links—but no duplicated question or answer content—in `questions/tracker/question_bank.md`. Produce original study material, not copied exam content.
 
+## Runtime environment
+
+Run repository and validator commands inside WSL Ubuntu with Linux-native tools. Before using `npm` in `apps/quiz`, confirm `node`, `npm`, and `npx` resolve to WSL binaries, select the `.nvmrc` version with `nvm use`, and install dependencies inside WSL when needed. Never substitute Windows `node.exe`, `npm.exe`, or Windows-installed `node_modules`; if the WSL runtime is unavailable, report the blocker and do not mark validation as passed.
+
 ## Choose the operation
 
 - **Create:** Research, write, verify, and append new questions.
