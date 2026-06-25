@@ -1,6 +1,5 @@
 export type Difficulty = 'Foundation' | 'Intermediate' | 'Advanced';
 export type QuestionStatus = 'Draft' | 'Verified';
-export type Confidence = 'Low' | 'Medium' | 'High' | 'Not recorded';
 
 export interface Choice {
   label: string;
@@ -22,10 +21,6 @@ export interface Question {
   status: QuestionStatus;
   prompt: string;
   choices: Choice[];
-  correctAnswer: string;
-  correctAnswerText: string;
-  explanation: string;
-  reasons: Record<string, string>;
 }
 
 export interface DomainCoverage {
@@ -45,17 +40,53 @@ export interface QuestionBank {
 }
 
 export interface ProgressEntry {
+  questionId: string;
   attempts: number;
   correct: number;
-  lastResult: 'correct' | 'incorrect';
-  lastConfidence: Confidence;
-  lastAttemptedAt: string;
+  accuracy: number;
+  lastResult: 'correct' | 'incorrect' | null;
+  lastAnswer: string | null;
+  lastAttemptedAt: string | null;
+  dueAt: string;
+  intervalDays: number;
+  easeFactor: number;
+  consecutiveCorrect: number;
+  lapses: number;
+  status: 'New' | 'Due' | 'Learning' | 'Scheduled' | 'Mature';
+  isDue: boolean;
+}
+
+export interface ProgressSummary {
+  totalAttempts: number;
+  totalCorrect: number;
+  accuracy: number;
+  attemptedQuestions: number;
+  dueNow: number;
+  scheduled: number;
+  mature: number;
+}
+
+export interface ProgressResponse {
+  entries: Record<string, ProgressEntry>;
+  summary: ProgressSummary;
+}
+
+export interface AnswerReview {
+  questionId: string;
+  selectedAnswer: string;
+  correct: boolean;
+  correctAnswer: string;
+  correctAnswerText: string;
+  explanation: string;
+  reasons: Record<string, string>;
+  progress: ProgressEntry;
+  summary: ProgressSummary;
 }
 
 export interface SessionResult {
   questionId: string;
   selectedAnswer: string;
   correct: boolean;
-  confidence: Confidence;
   timedOut: boolean;
+  dueAt?: string;
 }

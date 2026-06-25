@@ -207,7 +207,9 @@ tempCodeRunnerFile.py
 node_modules/
 apps/quiz/dist/
 apps/quiz/.vite/
+apps/quiz/.tsbuild/
 *.tsbuildinfo
+apps/api/data/
 
 # Personal quiz progress
 docs/quiz_progress.md

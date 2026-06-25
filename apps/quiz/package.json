@@ -8,7 +8,7 @@
   },
   "scripts": {
     "dev": "vite",
-    "build": "npm run validate:questions && tsc -b && vite build",
+    "build": "npm run validate:questions && tsc -p tsconfig.app.json && vite build",
     "preview": "vite preview",
     "validate:questions": "node scripts/validate-question-bank.mjs"
   },

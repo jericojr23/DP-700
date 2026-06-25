@@ -9,7 +9,9 @@ This guide explains how to use the repository's `$dp700-quiz-bank` skill to crea
 | `.agents/skills/dp700-quiz-bank/SKILL.md` | Defines how the skill creates, verifies, and administers questions. |
 | `questions/DP700-XXX.md` | Stores each question, answer key, explanation, and source. |
 | `questions/tracker/question_bank.md` | Stores coverage totals and links to the standalone questions. |
-| `docs/quiz_progress.md` | Stores attempts, accuracy, confidence, review status, and session results. |
+| `apps/api` | Stores API code for persistent attempts and spaced repetition scheduling. |
+| `apps/api/data/progress.sqlite` | Stores local SQLite attempts and spaced repetition state; ignored by Git. |
+| `docs/quiz_progress.md` | Stores Codex-run quiz notes when you ask the skill to administer a quiz in chat. |
 
 ## Invoke the Skill
 
@@ -33,7 +35,26 @@ questions/DP700-XXX.md files and update questions/tracker/question_bank.md.
 
 The skill will create original questions, check their answers against current official Microsoft documentation, assign unique IDs, and update the question-bank coverage totals.
 
-## Start a Tracked Quiz
+## Start the Browser Practice App
+
+Start the FastAPI backend:
+
+```bash
+cd apps/api
+source .venv/bin/activate
+uvicorn main:app --reload --host 127.0.0.1 --port 8000
+```
+
+Then start the React app:
+
+```bash
+cd apps/quiz
+npm run dev
+```
+
+The browser app uses spaced repetition. It does not ask for confidence. A correct answer schedules the question into the future; an incorrect or timed-out answer keeps it due immediately.
+
+## Start a Codex-Tracked Quiz
 
 ```text
 Use $dp700-quiz-bank to give me a tracked five-question quiz. Ask one
@@ -48,11 +69,13 @@ B, medium confidence
 
 Valid confidence levels are `Low`, `Medium`, and `High`. You may answer with only the choice, such as `B`; confidence will then be recorded as `Not recorded`.
 
-After every answered question, the skill updates `docs/quiz_progress.md`. Skipped questions do not count as attempts.
+After every answered question, the skill updates `docs/quiz_progress.md`. Skipped questions do not count as attempts. This Markdown progress file is separate from the browser app's SQLite progress.
 
 ## Review Weak Areas
 
-Ask the skill to prioritize questions marked `Needs review`:
+In the browser app, enable **Due cards only** to practice new cards and cards whose scheduled review time has arrived.
+
+For Codex-run quizzes, ask the skill to prioritize questions marked `Needs review`:
 
 ```text
 Use $dp700-quiz-bank to review my progress, identify my weakest topics,
@@ -129,7 +152,7 @@ question bank and coverage tracker.
 1. Create a balanced initial bank of questions.
 2. Take a tracked quiz and include your confidence with each answer.
 3. Review the explanations for incorrect or low-confidence answers.
-4. Run a `Needs review` quiz during the next session.
+4. Run due cards in the browser app, or run a `Needs review` quiz with Codex.
 5. Add new questions when weak topics do not have enough coverage.
 6. Periodically audit the bank against current Microsoft documentation.
 

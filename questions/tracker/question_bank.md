@@ -12,10 +12,10 @@ This file tracks coverage and links to the standalone DP-700 practice questions 
 
 | Domain | Foundation | Intermediate | Advanced | Total |
 |---|---:|---:|---:|---:|
-| Implement and manage an analytics solution | 2 | 2 | 2 | 6 |
-| Ingest and transform data | 1 | 2 | 2 | 5 |
-| Monitor and optimize an analytics solution | 2 | 1 | 2 | 5 |
-| **Total** | **5** | **5** | **6** | **16** |
+| Implement and manage an analytics solution | 3 | 2 | 2 | 7 |
+| Ingest and transform data | 3 | 2 | 2 | 7 |
+| Monitor and optimize an analytics solution | 2 | 2 | 2 | 6 |
+| **Total** | **8** | **6** | **6** | **20** |
 
 Update this table whenever a standalone question is added, removed, or changes domain or difficulty.
 
@@ -39,6 +39,10 @@ Update this table whenever a standalone question is added, removed, or changes d
 | [DP700-014](../DP700-014.md) | Compact and cluster a read-heavy Delta table | Monitor and optimize an analytics solution | Delta table optimization, Z-Order, and V-Order | Advanced | Verified | 2026-06-25 |
 | [DP700-015](../DP700-015.md) | Refresh warehouse statistics after a major load | Monitor and optimize an analytics solution | Fabric Data Warehouse statistics | Advanced | Verified | 2026-06-25 |
 | [DP700-016](../DP700-016.md) | Query one lakehouse only through T-SQL | Implement and manage an analytics solution | Item-level lakehouse access control | Advanced | Verified | 2026-06-25 |
+| [DP700-017](../DP700-017.md) | Govern a shared Spark runtime | Implement and manage an analytics solution | Spark environment runtime configuration | Foundation | Verified | 2026-06-25 |
+| [DP700-018](../DP700-018.md) | Persist transformed data for Spark SQL | Ingest and transform data | Spark catalog Delta tables | Foundation | Verified | 2026-06-25 |
+| [DP700-019](../DP700-019.md) | Average revenue by category | Ingest and transform data | Group and aggregate data with PySpark DataFrames | Foundation | Verified | 2026-06-25 |
+| [DP700-020](../DP700-020.md) | Accelerate supported Spark aggregations | Monitor and optimize an analytics solution | Spark native execution engine | Intermediate | Verified | 2026-06-25 |
 
 ## Maintenance Rules
 

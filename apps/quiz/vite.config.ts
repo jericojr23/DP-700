@@ -21,7 +21,9 @@ function questionBankPlugin(): Plugin {
       for (const file of bank.files) this.addWatchFile(file);
 
       return `export default ${JSON.stringify({
-        questions: bank.questions,
+        questions: bank.questions.map(
+          ({ correctAnswer, correctAnswerText, explanation, reasons, ...question }) => question,
+        ),
         coverage: bank.coverage,
       })};`;
     },

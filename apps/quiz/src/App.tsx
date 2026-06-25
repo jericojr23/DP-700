@@ -7,39 +7,45 @@ import {
   type CSSProperties,
   type ReactNode,
 } from 'react';
-import questionBank from 'virtual:question-bank';
+import fallbackQuestionBank from 'virtual:question-bank';
 import type {
-  Confidence,
+  AnswerReview,
   Difficulty,
   ProgressEntry,
+  ProgressResponse,
+  ProgressSummary,
   Question,
+  QuestionBank,
   SessionResult,
 } from './types';
 
-const STORAGE_KEY = 'dp700-practice-progress-v1';
+const API_BASE = import.meta.env.VITE_API_BASE_URL ?? 'http://127.0.0.1:8000';
 const ALL_DOMAINS = 'All domains';
 const ALL_DIFFICULTIES = 'All levels';
-const confidenceLevels: Exclude<Confidence, 'Not recorded'>[] = ['Low', 'Medium', 'High'];
 const timerOptions = [0, 30, 60, 90];
+const emptySummary: ProgressSummary = {
+  totalAttempts: 0,
+  totalCorrect: 0,
+  accuracy: 0,
+  attemptedQuestions: 0,
+  dueNow: 0,
+  scheduled: 0,
+  mature: 0,
+};
 
 type View = 'home' | 'quiz' | 'summary';
+type ApiStatus = 'loading' | 'ready' | 'offline';
 
-function readProgress(): Record<string, ProgressEntry> {
-  try {
-    const stored = localStorage.getItem(STORAGE_KEY);
-    return stored ? (JSON.parse(stored) as Record<string, ProgressEntry>) : {};
-  } catch {
-    return {};
+async function apiRequest<T>(path: string, options?: RequestInit): Promise<T> {
+  const response = await fetch(`${API_BASE}${path}`, {
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    ...options,
+  });
+  if (!response.ok) {
+    const message = await response.text();
+    throw new Error(message || `API request failed with ${response.status}`);
   }
-}
-
-function shuffled<T>(items: T[]): T[] {
-  const copy = [...items];
-  for (let index = copy.length - 1; index > 0; index -= 1) {
-    const randomIndex = Math.floor(Math.random() * (index + 1));
-    [copy[index], copy[randomIndex]] = [copy[randomIndex], copy[index]];
-  }
-  return copy;
+  return (await response.json()) as T;
 }
 
 function formatTime(seconds: number): string {
@@ -48,8 +54,15 @@ function formatTime(seconds: number): string {
   return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
 }
 
-function needsReview(entry?: ProgressEntry): boolean {
-  return entry?.lastResult === 'incorrect';
+function formatDue(value?: string | null): string {
+  if (!value) return 'Not scheduled';
+  const dueDate = new Date(value);
+  const now = new Date();
+  const diffMs = dueDate.getTime() - now.getTime();
+  if (diffMs <= 0) return 'Due now';
+  const diffHours = Math.ceil(diffMs / 3_600_000);
+  if (diffHours < 24) return `Due in ${diffHours}h`;
+  return `Due in ${Math.ceil(diffHours / 24)}d`;
 }
 
 function RichText({ children }: { children: string }) {
@@ -113,116 +126,147 @@ function App() {
   const [view, setView] = useState<View>('home');
   const [domain, setDomain] = useState(ALL_DOMAINS);
   const [difficulty, setDifficulty] = useState<string>(ALL_DIFFICULTIES);
-  const [reviewOnly, setReviewOnly] = useState(false);
+  const [dueOnly, setDueOnly] = useState(false);
   const [questionCount, setQuestionCount] = useState(5);
   const [timerSeconds, setTimerSeconds] = useState(0);
-  const [progress, setProgress] = useState<Record<string, ProgressEntry>>(readProgress);
+  const [questionBank, setQuestionBank] = useState<QuestionBank>(fallbackQuestionBank);
+  const [progress, setProgress] = useState<Record<string, ProgressEntry>>({});
+  const [progressSummary, setProgressSummary] = useState<ProgressSummary>(emptySummary);
+  const [apiStatus, setApiStatus] = useState<ApiStatus>('loading');
+  const [apiError, setApiError] = useState('');
   const [sessionQuestions, setSessionQuestions] = useState<Question[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [selectedAnswer, setSelectedAnswer] = useState('');
-  const [confidence, setConfidence] = useState<Exclude<Confidence, 'Not recorded'> | ''>('');
   const [submitted, setSubmitted] = useState(false);
+  const [answerReview, setAnswerReview] = useState<AnswerReview | null>(null);
   const [sessionResults, setSessionResults] = useState<SessionResult[]>([]);
   const [timeRemaining, setTimeRemaining] = useState(0);
   const [timerDeadline, setTimerDeadline] = useState<number | null>(null);
   const [timedOut, setTimedOut] = useState(false);
   const completionLocked = useRef(false);
-  const previousSessionOrder = useRef<string[]>([]);
 
   useEffect(() => {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(progress));
-  }, [progress]);
+    let cancelled = false;
 
-  const reviewIds = useMemo(
-    () => new Set(Object.entries(progress).filter(([, entry]) => needsReview(entry)).map(([id]) => id)),
-    [progress],
-  );
+    async function loadInitialState() {
+      try {
+        const [bank, progressResponse] = await Promise.all([
+          apiRequest<QuestionBank>('/api/question-bank'),
+          apiRequest<ProgressResponse>('/api/progress'),
+        ]);
+        if (cancelled) return;
+        setQuestionBank(bank);
+        setProgress(progressResponse.entries);
+        setProgressSummary(progressResponse.summary);
+        setApiStatus('ready');
+        setApiError('');
+      } catch (error) {
+        if (cancelled) return;
+        setApiStatus('offline');
+        setApiError(error instanceof Error ? error.message : 'Unable to reach the quiz API.');
+      }
+    }
+
+    void loadInitialState();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   const filteredQuestions = useMemo(
     () =>
-      questionBank.questions.filter(
-        (question) =>
+      questionBank.questions.filter((question) => {
+        const entry = progress[question.id];
+        const isDue = !entry || entry.isDue;
+        return (
           (domain === ALL_DOMAINS || question.domain === domain) &&
           (difficulty === ALL_DIFFICULTIES || question.difficulty === difficulty) &&
-          (!reviewOnly || reviewIds.has(question.id)),
-      ),
-    [difficulty, domain, reviewIds, reviewOnly],
+          (!dueOnly || isDue)
+        );
+      }),
+    [difficulty, domain, dueOnly, progress, questionBank.questions],
   );
 
-  const totalAttempts = Object.values(progress).reduce((sum, item) => sum + item.attempts, 0);
-  const totalCorrect = Object.values(progress).reduce((sum, item) => sum + item.correct, 0);
-  const accuracy = totalAttempts ? Math.round((totalCorrect / totalAttempts) * 100) : 0;
-  const attemptedQuestions = Object.keys(progress).length;
   const largestDomain = Math.max(...questionBank.coverage.domains.map((item) => item.total));
   const currentQuestion = sessionQuestions[currentIndex];
+  const currentProgress = currentQuestion ? progress[currentQuestion.id] : undefined;
+  const currentIsCorrect = Boolean(answerReview?.correct);
 
-  const startSession = (pool: Question[] = filteredQuestions) => {
-    if (pool.length === 0) return;
-    const count = Math.min(questionCount, pool.length);
-    let nextQuestions = shuffled(pool).slice(0, count);
-    const repeatsPreviousOrder =
-      nextQuestions.length > 1 &&
-      nextQuestions.length === previousSessionOrder.current.length &&
-      nextQuestions.every(
-        (question, index) => question.id === previousSessionOrder.current[index],
-      );
+  const startSession = async (pool?: Question[]) => {
+    if (apiStatus !== 'ready') return;
+    const count = Math.min(questionCount, pool?.length ?? filteredQuestions.length);
+    if (count === 0) return;
 
-    if (repeatsPreviousOrder) {
-      nextQuestions = [...nextQuestions.slice(1), nextQuestions[0]];
+    try {
+      const response = pool
+        ? { questions: pool.slice(0, count) }
+        : await apiRequest<{ questions: Question[] }>('/api/sessions', {
+            method: 'POST',
+            body: JSON.stringify({
+              count,
+              domain: domain === ALL_DOMAINS ? null : domain,
+              difficulty: difficulty === ALL_DIFFICULTIES ? null : difficulty,
+              dueOnly,
+            }),
+          });
+
+      setSessionQuestions(response.questions);
+      setCurrentIndex(0);
+      setSelectedAnswer('');
+      setSubmitted(false);
+      setAnswerReview(null);
+      setSessionResults([]);
+      setTimeRemaining(timerSeconds);
+      setTimerDeadline(timerSeconds > 0 ? Date.now() + timerSeconds * 1000 : null);
+      setTimedOut(false);
+      completionLocked.current = false;
+      setView('quiz');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    } catch (error) {
+      setApiStatus('offline');
+      setApiError(error instanceof Error ? error.message : 'Unable to start a quiz session.');
     }
-
-    previousSessionOrder.current = nextQuestions.map((question) => question.id);
-    setSessionQuestions(nextQuestions);
-    setCurrentIndex(0);
-    setSelectedAnswer('');
-    setConfidence('');
-    setSubmitted(false);
-    setSessionResults([]);
-    setTimeRemaining(timerSeconds);
-    setTimerDeadline(timerSeconds > 0 ? Date.now() + timerSeconds * 1000 : null);
-    setTimedOut(false);
-    completionLocked.current = false;
-    setView('quiz');
-    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  const currentIsCorrect = Boolean(
-    currentQuestion && selectedAnswer === currentQuestion.correctAnswer,
-  );
-
-  const completeAnswer = useCallback((answer: string, didTimeOut = false) => {
+  const completeAnswer = useCallback(async (answer: string, didTimeOut = false) => {
     if (!currentQuestion || completionLocked.current || (!answer && !didTimeOut)) return;
     completionLocked.current = true;
-    const recordedConfidence: Confidence = didTimeOut ? 'Not recorded' : confidence || 'Not recorded';
-    const correct = answer === currentQuestion.correctAnswer;
 
-    setProgress((current) => {
-      const previous = current[currentQuestion.id];
-      return {
+    try {
+      const review = await apiRequest<AnswerReview>('/api/answers', {
+        method: 'POST',
+        body: JSON.stringify({
+          questionId: currentQuestion.id,
+          answer,
+          timedOut: didTimeOut,
+        }),
+      });
+
+      setProgress((current) => ({
         ...current,
-        [currentQuestion.id]: {
-          attempts: (previous?.attempts ?? 0) + 1,
-          correct: (previous?.correct ?? 0) + (correct ? 1 : 0),
-          lastResult: correct ? 'correct' : 'incorrect',
-          lastConfidence: recordedConfidence,
-          lastAttemptedAt: new Date().toISOString(),
+        [review.questionId]: review.progress,
+      }));
+      setProgressSummary(review.summary);
+      setAnswerReview(review);
+      setSessionResults((current) => [
+        ...current,
+        {
+          questionId: currentQuestion.id,
+          selectedAnswer: answer,
+          correct: review.correct,
+          timedOut: didTimeOut,
+          dueAt: review.progress.dueAt,
         },
-      };
-    });
-    setSessionResults((current) => [
-      ...current,
-      {
-        questionId: currentQuestion.id,
-        selectedAnswer: answer,
-        correct,
-        confidence: recordedConfidence,
-        timedOut: didTimeOut,
-      },
-    ]);
-    setTimerDeadline(null);
-    setTimedOut(didTimeOut);
-    setSubmitted(true);
-  }, [confidence, currentQuestion]);
+      ]);
+      setTimerDeadline(null);
+      setTimedOut(didTimeOut);
+      setSubmitted(true);
+    } catch (error) {
+      completionLocked.current = false;
+      setApiStatus('offline');
+      setApiError(error instanceof Error ? error.message : 'Unable to submit the answer.');
+    }
+  }, [currentQuestion]);
 
   useEffect(() => {
     if (view !== 'quiz' || submitted || timerDeadline === null) return;
@@ -243,11 +287,11 @@ function App() {
       timerDeadline !== null &&
       timeRemaining === 0
     ) {
-      completeAnswer('', true);
+      void completeAnswer('', true);
     }
   }, [completeAnswer, currentQuestion, submitted, timeRemaining, timerDeadline, view]);
 
-  const submitAnswer = () => completeAnswer(selectedAnswer);
+  const submitAnswer = () => void completeAnswer(selectedAnswer);
 
   const moveNext = () => {
     if (currentIndex === sessionQuestions.length - 1) {
@@ -255,8 +299,8 @@ function App() {
     } else {
       setCurrentIndex((current) => current + 1);
       setSelectedAnswer('');
-      setConfidence('');
       setSubmitted(false);
+      setAnswerReview(null);
       setTimeRemaining(timerSeconds);
       setTimerDeadline(timerSeconds > 0 ? Date.now() + timerSeconds * 1000 : null);
       setTimedOut(false);
@@ -275,9 +319,15 @@ function App() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  const clearProgress = () => {
-    if (window.confirm('Clear all locally stored quiz attempts and confidence ratings?')) {
-      setProgress({});
+  const clearProgress = async () => {
+    if (!window.confirm('Clear all API-backed attempts and spaced repetition scheduling?')) return;
+    try {
+      const response = await apiRequest<ProgressResponse>('/api/progress', { method: 'DELETE' });
+      setProgress(response.entries);
+      setProgressSummary(response.summary);
+    } catch (error) {
+      setApiStatus('offline');
+      setApiError(error instanceof Error ? error.message : 'Unable to clear progress.');
     }
   };
 
@@ -299,8 +349,8 @@ function App() {
           </span>
         </button>
         <div className="header-meta">
-          <span className="live-dot" />
-          {questionBank.coverage.total} verified questions
+          <span className={`live-dot ${apiStatus === 'ready' ? '' : 'offline'}`} />
+          {apiStatus === 'ready' ? `${questionBank.coverage.total} verified questions` : 'API offline'}
         </div>
       </header>
 
@@ -310,17 +360,17 @@ function App() {
             <section className="hero">
               <div className="hero-copy">
                 <span className="eyebrow">Microsoft Fabric Data Engineer</span>
-                <h1>Study with signal,<br /><span>not guesswork.</span></h1>
+                <h1>Study on schedule,<br /><span>not on hunches.</span></h1>
                 <p>
-                  Scenario-based DP-700 practice with source-verified explanations, confidence
-                  tracking, and a review queue that remembers where to focus next.
+                  Scenario-based DP-700 practice with source-verified explanations, API-backed
+                  attempt history, and spaced repetition that brings questions back when they are due.
                 </p>
               </div>
               <div className="hero-orbit" aria-hidden="true">
                 <div className="orbit-ring orbit-ring-one" />
                 <div className="orbit-ring orbit-ring-two" />
                 <div className="orbit-core">
-                  <strong>{accuracy}%</strong>
+                  <strong>{progressSummary.accuracy}%</strong>
                   <span>lifetime accuracy</span>
                 </div>
                 <span className="orbit-chip orbit-chip-one">SQL</span>
@@ -329,18 +379,25 @@ function App() {
               </div>
             </section>
 
+            {apiStatus !== 'ready' && (
+              <section className="api-banner" aria-live="polite">
+                <strong>Start the quiz API to save attempts and use spaced repetition.</strong>
+                <span>{apiError || 'Waiting for FastAPI at http://127.0.0.1:8000.'}</span>
+              </section>
+            )}
+
             <section className="stat-grid" aria-label="Learning progress">
               <article className="stat-card">
                 <span>Questions attempted</span>
-                <strong>{attemptedQuestions}<small> / {questionBank.coverage.total}</small></strong>
+                <strong>{progressSummary.attemptedQuestions}<small> / {questionBank.coverage.total}</small></strong>
               </article>
               <article className="stat-card">
                 <span>Total answers</span>
-                <strong>{totalAttempts}</strong>
+                <strong>{progressSummary.totalAttempts}</strong>
               </article>
               <article className="stat-card accent-card">
-                <span>Ready for review</span>
-                <strong>{reviewIds.size}</strong>
+                <span>Due now</span>
+                <strong>{progressSummary.dueNow}</strong>
               </article>
             </section>
 
@@ -350,8 +407,8 @@ function App() {
                   <span className="eyebrow">Build a session</span>
                   <h2>Choose your practice mix</h2>
                 </div>
-                {totalAttempts > 0 && (
-                  <button className="text-button danger-text" type="button" onClick={clearProgress}>
+                {progressSummary.totalAttempts > 0 && (
+                  <button className="text-button danger-text" type="button" onClick={() => void clearProgress()}>
                     Clear history
                   </button>
                 )}
@@ -402,19 +459,25 @@ function App() {
                 </label>
               </div>
 
-              <label className={`review-toggle ${reviewOnly ? 'active' : ''}`}>
+              <label className={`review-toggle ${dueOnly ? 'active' : ''}`}>
                 <input
                   type="checkbox"
-                  checked={reviewOnly}
-                  onChange={(event) => setReviewOnly(event.target.checked)}
+                  checked={dueOnly}
+                  onChange={(event) => setDueOnly(event.target.checked)}
                 />
                 <span className="toggle-control" aria-hidden="true"><span /></span>
                 <span>
-                  <strong>Review mode</strong>
-                  <small>Only questions whose latest answer was incorrect</small>
+                  <strong>Due cards only</strong>
+                  <small>New cards and cards scheduled for review now</small>
                 </span>
-                <b>{reviewIds.size}</b>
+                <b>{progressSummary.dueNow}</b>
               </label>
+
+              <div className="schedule-strip" aria-label="Spaced repetition schedule">
+                <span><b>{progressSummary.scheduled}</b> scheduled</span>
+                <span><b>{progressSummary.mature}</b> mature</span>
+                <span><b>{progressSummary.totalCorrect}</b> correct</span>
+              </div>
 
               <div className="start-row">
                 <span>
@@ -423,8 +486,8 @@ function App() {
                 <button
                   className="primary-button"
                   type="button"
-                  onClick={() => startSession()}
-                  disabled={filteredQuestions.length === 0}
+                  onClick={() => void startSession()}
+                  disabled={filteredQuestions.length === 0 || apiStatus !== 'ready'}
                 >
                   Start practice <ArrowIcon />
                 </button>
@@ -468,6 +531,7 @@ function App() {
               <button className="text-button" type="button" onClick={returnHome}>← Exit session</button>
               <div className="quiz-status">
                 <span>Question {currentIndex + 1} of {sessionQuestions.length}</span>
+                <span className="due-pill">{formatDue(currentProgress?.dueAt)}</span>
                 {timerSeconds > 0 && (
                   <span
                     className={`question-timer ${!submitted && timeRemaining <= 10 ? 'urgent' : ''}`}
@@ -496,7 +560,7 @@ function App() {
                 <legend className="sr-only">Choose one answer</legend>
                 {currentQuestion.choices.map((choice) => {
                   const isSelected = selectedAnswer === choice.label;
-                  const isCorrect = choice.label === currentQuestion.correctAnswer;
+                  const isCorrect = choice.label === answerReview?.correctAnswer;
                   const stateClass = submitted
                     ? isCorrect
                       ? 'correct'
@@ -526,20 +590,9 @@ function App() {
 
               {!submitted && (
                 <div className="answer-controls">
-                  <div className="confidence-control">
-                    <span>How confident are you?</span>
-                    <div>
-                      {confidenceLevels.map((level) => (
-                        <button
-                          className={confidence === level ? 'active' : ''}
-                          type="button"
-                          key={level}
-                          onClick={() => setConfidence(level)}
-                        >
-                          {level}
-                        </button>
-                      ))}
-                    </div>
+                  <div className="schedule-note">
+                    <span>Spaced repetition</span>
+                    <p>Correct answers are scheduled forward. Missed or timed-out questions stay due.</p>
                   </div>
                   <button
                     className="primary-button"
@@ -552,19 +605,24 @@ function App() {
                 </div>
               )}
 
-              {submitted && (
+              {submitted && answerReview && (
                 <section className={`feedback ${currentIsCorrect ? 'feedback-correct' : 'feedback-incorrect'}`} aria-live="polite">
                   <div className="feedback-heading">
                     <MarkIcon>{currentIsCorrect ? <CheckIcon /> : '×'}</MarkIcon>
                     <div>
                       <span>{currentIsCorrect ? 'Correct' : 'Not quite'}</span>
                       {timedOut && <span className="timeout-label">Time expired</span>}
-                      <h2>{currentQuestion.correctAnswer}. {currentQuestion.correctAnswerText}</h2>
+                      <h2>{answerReview.correctAnswer}. {answerReview.correctAnswerText}</h2>
                     </div>
+                  </div>
+                  <div className="next-review">
+                    <span>Next review</span>
+                    <strong>{formatDue(answerReview.progress.dueAt)}</strong>
+                    <small>{answerReview.progress.intervalDays === 0 ? 'Still due' : `${answerReview.progress.intervalDays} day interval`}</small>
                   </div>
                   <div className="explanation">
                     <h3>Why this is the best answer</h3>
-                    <RichText>{currentQuestion.explanation}</RichText>
+                    <RichText>{answerReview.explanation}</RichText>
                   </div>
                   <details className="choice-review">
                     <summary>Review every choice</summary>
@@ -572,7 +630,7 @@ function App() {
                       {currentQuestion.choices.map((choice) => (
                         <article key={choice.label}>
                           <strong>{choice.label}</strong>
-                          <RichText>{currentQuestion.reasons[choice.label]}</RichText>
+                          <RichText>{answerReview.reasons[choice.label]}</RichText>
                         </article>
                       ))}
                     </div>
@@ -603,8 +661,8 @@ function App() {
               <h1>{sessionScore === sessionResults.length ? 'Clean sweep.' : sessionScore / sessionResults.length >= 0.7 ? 'Solid work.' : 'Good data. Now refine.'}</h1>
               <p>
                 {missedQuestions.length === 0
-                  ? 'Every answer landed. Keep these questions in rotation for retention.'
-                  : `${missedQuestions.length} question${missedQuestions.length === 1 ? '' : 's'} moved into your review queue.`}
+                  ? 'Every answer was scheduled forward for later retention.'
+                  : `${missedQuestions.length} question${missedQuestions.length === 1 ? '' : 's'} stayed due for another pass.`}
               </p>
 
               {timedOutCount > 0 && (
@@ -615,7 +673,7 @@ function App() {
 
               {missedQuestions.length > 0 && (
                 <div className="missed-list">
-                  <span>Review next</span>
+                  <span>Still due</span>
                   {missedQuestions.map((question) => (
                     <div key={question.id}>
                       <strong>{question.id}</strong>
@@ -627,7 +685,7 @@ function App() {
 
               <div className="summary-actions">
                 {missedQuestions.length > 0 && (
-                  <button className="secondary-button" type="button" onClick={() => startSession(missedQuestions)}>
+                  <button className="secondary-button" type="button" onClick={() => void startSession(missedQuestions)}>
                     Retry missed
                   </button>
                 )}

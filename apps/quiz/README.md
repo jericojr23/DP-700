@@ -1,6 +1,6 @@
 # DP-700 Practice Studio
 
-A static React and TypeScript quiz application generated directly from the repository's standalone Markdown questions.
+A React and TypeScript quiz application backed by the local FastAPI spaced repetition service.
 
 ## First-time WSL Ubuntu setup
 
@@ -28,7 +28,18 @@ Do not use the Windows `npm.exe` from this WSL directory. Keep Node, npm, `node_
 
 ## Run locally
 
+Start the API first:
+
 ```bash
+cd ../api
+source .venv/bin/activate
+uvicorn main:app --reload --host 127.0.0.1 --port 8000
+```
+
+Then start the quiz app:
+
+```bash
+cd ../quiz
 npm run dev
 ```
 
@@ -54,16 +65,16 @@ The production output is written to `apps/quiz/dist`.
 questions/DP700-XXX.md
           +
 questions/tracker/question_bank.md
-          ↓ build-time parser and validator
-virtual:question-bank
           ↓
-React practice interface
+FastAPI Markdown loader
+          ↓
+React practice interface ← SQLite attempts and spaced repetition state
 ```
 
 The parser fails when tracker links, metadata, coverage totals, required question sections, or answer mappings are inconsistent. The application never creates a second hand-maintained question bank.
 
-Browser progress is stored locally under `dp700-practice-progress-v1`. Clearing site data or choosing **Clear history** resets it.
+Progress is stored by the API in `apps/api/data/progress.sqlite`, which is ignored by Git. Choosing **Clear history** deletes the API-backed attempts and scheduling state.
 
 Practice sessions can be untimed or use a 30, 60, or 90 second countdown per question. An unanswered question is recorded as incorrect when its timer expires.
 
-Question order is shuffled at the start of every session. Review mode includes questions whose latest answer was incorrect and removes them after a correct answer.
+Question order is selected by spaced repetition priority. Correct answers are scheduled forward; missed or timed-out questions remain due immediately. The app no longer asks for Low, Medium, or High confidence.
