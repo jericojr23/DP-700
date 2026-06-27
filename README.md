@@ -13,7 +13,7 @@ cd apps/api
 python3 -m venv .venv
 source .venv/bin/activate
 pip install -r requirements.txt
-uvicorn main:app --reload --host 127.0.0.1 --port 8000
+uvicorn main:app --reload --host 127.0.0.1 --port 8001
 ```
 
 ## Quiz application
@@ -30,7 +30,7 @@ npm install
 npm run dev
 ```
 
-Open <http://localhost:5173>. See [`apps/quiz/README.md`](apps/quiz/README.md) for first-time Node setup, validation, and production build commands.
+Set `apps/quiz/.env.local` to the API URL, such as `VITE_API_BASE_URL=http://127.0.0.1:8001`, then open the Vite URL printed by the dev server. See [`apps/quiz/README.md`](apps/quiz/README.md) for first-time Node setup, validation, and production build commands.
 
 ## Question bank
 

@@ -324,6 +324,59 @@ The best distractors come from real mistakes. Use these patterns:
 
 ---
 
+## Anki Export Workflow
+
+The Anki import file is a generated study artifact, not the question-bank source of truth.
+
+Use this repo-local skill for Anki-focused work:
+
+```text
+$dp700-anki-export
+```
+
+### Source files
+
+- `files/DP-700 Consolidated Review.txt` stores Anki-only recall cards.
+- `questions/DP700-*.md` stores full quiz-bank questions and should only be edited when adding or fixing canonical practice questions.
+- `apps/quiz/scripts/export-anki.mjs` generates `exports/anki/dp700-anki-import.tsv`.
+- `exports/anki/dp700-anki-import.tsv` is the file to import into Anki. Do not hand-edit it.
+
+### Add Anki-only cards
+
+Add one tab-separated card per line to `files/DP-700 Consolidated Review.txt`:
+
+```text
+Front question<TAB>Back answer with explanation and source
+```
+
+Before adding a card, search for a distinctive phrase from the front:
+
+```bash
+rg -n "Direct Lake mode" files questions apps/quiz/scripts/export-anki.mjs exports/anki/dp700-anki-import.tsv
+```
+
+### Regenerate and validate
+
+Run from WSL Ubuntu with WSL-native Node.js:
+
+```bash
+cd apps/quiz
+nvm use
+npm run export:anki
+npm run validate:questions
+cd ../..
+git diff --check
+awk 'BEGIN{bad=0; cards=0} /^#/ {next} { cards++; if (NF != 3) { print "bad row", NR, "fields", NF; bad=1 } } END{ print "card rows", cards; if (bad) exit 1 }' FS='\t' exports/anki/dp700-anki-import.tsv
+```
+
+If `npm run export:anki` reports skipped duplicate fronts, inspect the source card and either merge, rewrite, or remove it before importing.
+
+### Import behavior
+
+Import `exports/anki/dp700-anki-import.tsv` into the existing Anki deck. Keep the note type as `Basic` and keep card fronts stable after import. Anki uses the first field to match existing notes during text import, so editing a front can create a new note instead of updating the existing one.
+
+---
+
 ## DP-700 Skills Map
 
 This table connects the lab modules to the official DP-700 exam skill areas. Use this when writing questions and documentation.

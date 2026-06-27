@@ -208,6 +208,7 @@ node_modules/
 apps/quiz/dist/
 apps/quiz/.vite/
 apps/quiz/.tsbuild/
+apps/quiz/.env.local
 *.tsbuildinfo
 apps/api/data/
 

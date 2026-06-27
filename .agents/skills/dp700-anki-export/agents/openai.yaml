@@ -1,0 +1,4 @@
+interface:
+  display_name: "DP-700 Anki Export"
+  short_description: "Export and dedupe DP-700 Anki cards"
+  default_prompt: "Use $dp700-anki-export to update and validate the DP-700 Anki import file."

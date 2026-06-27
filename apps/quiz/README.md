@@ -33,7 +33,7 @@ Start the API first:
 ```bash
 cd ../api
 source .venv/bin/activate
-uvicorn main:app --reload --host 127.0.0.1 --port 8000
+uvicorn main:app --reload --host 127.0.0.1 --port 8001
 ```
 
 Then start the quiz app:
@@ -42,6 +42,14 @@ Then start the quiz app:
 cd ../quiz
 npm run dev
 ```
+
+The app reads the API URL from `.env.local`:
+
+```text
+VITE_API_BASE_URL=http://127.0.0.1:8001
+```
+
+Copy `.env.example` to `.env.local` if you need to recreate it.
 
 Open <http://localhost:5173>. If Windows cannot reach the default WSL-bound address, use:
 

@@ -382,7 +382,7 @@ function App() {
             {apiStatus !== 'ready' && (
               <section className="api-banner" aria-live="polite">
                 <strong>Start the quiz API to save attempts and use spaced repetition.</strong>
-                <span>{apiError || 'Waiting for FastAPI at http://127.0.0.1:8000.'}</span>
+                <span>{apiError || `Waiting for FastAPI at ${API_BASE}.`}</span>
               </section>
             )}
 

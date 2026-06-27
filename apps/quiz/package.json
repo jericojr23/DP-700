@@ -9,6 +9,7 @@
   "scripts": {
     "dev": "vite",
     "build": "npm run validate:questions && tsc -p tsconfig.app.json && vite build",
+    "export:anki": "node scripts/export-anki.mjs",
     "preview": "vite preview",
     "validate:questions": "node scripts/validate-question-bank.mjs"
   },

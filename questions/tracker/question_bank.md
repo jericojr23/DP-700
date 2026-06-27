@@ -12,10 +12,10 @@ This file tracks coverage and links to the standalone DP-700 practice questions 
 
 | Domain | Foundation | Intermediate | Advanced | Total |
 |---|---:|---:|---:|---:|
-| Implement and manage an analytics solution | 3 | 2 | 2 | 7 |
-| Ingest and transform data | 3 | 2 | 2 | 7 |
+| Implement and manage an analytics solution | 3 | 3 | 2 | 8 |
+| Ingest and transform data | 7 | 4 | 3 | 14 |
 | Monitor and optimize an analytics solution | 2 | 2 | 2 | 6 |
-| **Total** | **8** | **6** | **6** | **20** |
+| **Total** | **12** | **9** | **7** | **28** |
 
 Update this table whenever a standalone question is added, removed, or changes domain or difficulty.
 
@@ -43,6 +43,14 @@ Update this table whenever a standalone question is added, removed, or changes d
 | [DP700-018](../DP700-018.md) | Persist transformed data for Spark SQL | Ingest and transform data | Spark catalog Delta tables | Foundation | Verified | 2026-06-25 |
 | [DP700-019](../DP700-019.md) | Average revenue by category | Ingest and transform data | Group and aggregate data with PySpark DataFrames | Foundation | Verified | 2026-06-25 |
 | [DP700-020](../DP700-020.md) | Accelerate supported Spark aggregations | Monitor and optimize an analytics solution | Spark native execution engine | Intermediate | Verified | 2026-06-25 |
+| [DP700-021](../DP700-021.md) | Visual cleanup before gold tables | Ingest and transform data | Choosing Dataflow Gen2 for low-code transformation | Foundation | Verified | 2026-06-25 |
+| [DP700-022](../DP700-022.md) | Orchestrate dependent Fabric tasks | Implement and manage an analytics solution | Data pipeline orchestration | Intermediate | Verified | 2026-06-25 |
+| [DP700-023](../DP700-023.md) | Custom PySpark enrichment | Ingest and transform data | Choosing notebooks for complex PySpark transformations | Intermediate | Verified | 2026-06-25 |
+| [DP700-024](../DP700-024.md) | SQL-first dimensional model | Ingest and transform data | Choosing Warehouse for dimensional analytics | Foundation | Verified | 2026-06-25 |
+| [DP700-025](../DP700-025.md) | Batch files and Delta tables | Ingest and transform data | Choosing Lakehouse for batch files and Delta tables | Foundation | Verified | 2026-06-25 |
+| [DP700-026](../DP700-026.md) | Analyze high-volume telemetry | Ingest and transform data | Choosing Eventhouse and KQL database for telemetry | Advanced | Verified | 2026-06-25 |
+| [DP700-027](../DP700-027.md) | Expose data without duplication | Ingest and transform data | Choosing OneLake shortcuts to avoid copying data | Foundation | Verified | 2026-06-25 |
+| [DP700-028](../DP700-028.md) | Capture streaming source events | Ingest and transform data | Choosing Eventstream for streaming ingestion | Intermediate | Verified | 2026-06-25 |
 
 ## Maintenance Rules
 

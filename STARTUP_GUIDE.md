@@ -11,13 +11,13 @@ cd apps/api
 python3 -m venv .venv
 source .venv/bin/activate
 pip install -r requirements.txt
-uvicorn main:app --reload --host 127.0.0.1 --port 8000
+uvicorn main:app --reload --host 127.0.0.1 --port 8001
 ```
 
 Health check:
 
 ```bash
-curl http://127.0.0.1:8000/api/health
+curl http://127.0.0.1:8001/api/health
 ```
 
 Expected response:
@@ -37,6 +37,14 @@ nvm use
 npm install
 npm run dev
 ```
+
+The quiz app reads the API URL from `apps/quiz/.env.local`:
+
+```text
+VITE_API_BASE_URL=http://127.0.0.1:8001
+```
+
+If you run the API on another port, update that file before starting Vite.
 
 Open the Vite URL shown in the terminal, usually:
 
