@@ -13,9 +13,9 @@ This file tracks coverage and links to the standalone DP-700 practice questions 
 | Domain | Foundation | Intermediate | Advanced | Total |
 |---|---:|---:|---:|---:|
 | Implement and manage an analytics solution | 3 | 3 | 2 | 8 |
-| Ingest and transform data | 7 | 4 | 3 | 14 |
-| Monitor and optimize an analytics solution | 2 | 2 | 2 | 6 |
-| **Total** | **12** | **9** | **7** | **28** |
+| Ingest and transform data | 9 | 6 | 6 | 21 |
+| Monitor and optimize an analytics solution | 3 | 3 | 2 | 8 |
+| **Total** | **15** | **12** | **10** | **37** |
 
 Update this table whenever a standalone question is added, removed, or changes domain or difficulty.
 
@@ -51,6 +51,15 @@ Update this table whenever a standalone question is added, removed, or changes d
 | [DP700-026](../DP700-026.md) | Analyze high-volume telemetry | Ingest and transform data | Choosing Eventhouse and KQL database for telemetry | Advanced | Verified | 2026-06-25 |
 | [DP700-027](../DP700-027.md) | Expose data without duplication | Ingest and transform data | Choosing OneLake shortcuts to avoid copying data | Foundation | Verified | 2026-06-25 |
 | [DP700-028](../DP700-028.md) | Capture streaming source events | Ingest and transform data | Choosing Eventstream for streaming ingestion | Intermediate | Verified | 2026-06-25 |
+| [DP700-029](../DP700-029.md) | Connect an existing streaming source | Ingest and transform data | Configuring Eventstream sources | Foundation | Verified | 2026-06-28 |
+| [DP700-030](../DP700-030.md) | Route event subsets by content | Ingest and transform data | Eventstream derived streams for content-based routing | Intermediate | Verified | 2026-06-28 |
+| [DP700-031](../DP700-031.md) | Use multiple destinations after a transformation | Ingest and transform data | Eventstream destinations after transformations | Advanced | Verified | 2026-06-28 |
+| [DP700-032](../DP700-032.md) | Load sample events into an Eventhouse table | Ingest and transform data | Eventstream destination configuration for Eventhouse ingestion | Foundation | Verified | 2026-06-28 |
+| [DP700-033](../DP700-033.md) | Verify recently ingested streaming records | Ingest and transform data | KQL validation of Eventstream ingestion | Intermediate | Verified | 2026-06-28 |
+| [DP700-034](../DP700-034.md) | Query grouped bicycle events by window | Ingest and transform data | Eventstream windowed aggregation with KQL | Advanced | Verified | 2026-06-28 |
+| [DP700-035](../DP700-035.md) | Inspect live destination activity | Monitor and optimize an analytics solution | Monitoring Eventstream ingestion activity | Foundation | Verified | 2026-06-28 |
+| [DP700-036](../DP700-036.md) | Configure a street-level tumbling window | Ingest and transform data | Eventstream Group by transformation configuration | Advanced | Verified | 2026-06-28 |
+| [DP700-037](../DP700-037.md) | Resolve an unstored transformation output | Monitor and optimize an analytics solution | Resolving Eventstream transformation configuration errors | Intermediate | Verified | 2026-06-28 |
 
 ## Maintenance Rules
 

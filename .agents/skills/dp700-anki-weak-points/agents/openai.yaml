@@ -1,0 +1,4 @@
+interface:
+  display_name: "DP-700 Anki Weak Points"
+  short_description: "Analyze Anki review history for weak DP-700 topics"
+  default_prompt: "Use $dp700-anki-weak-points to analyze my DP-700 .apkg export and update docs/quiz_progress_anki.md."

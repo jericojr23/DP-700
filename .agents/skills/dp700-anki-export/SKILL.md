@@ -43,6 +43,31 @@ Front question<TAB>Back answer with explanation and source
 
 Keep the front stable after import. Anki uses the first field to match existing notes during text import, so changing the front can create a new note instead of updating the old one.
 
+Anki-only cards can be added from authoritative internet validation, local `files/` sources, or both. Use original wording and include the supporting link in the card back. Do not copy live-exam, recalled, commercial practice-test, or dump-style content into the cards.
+
+## Source Correctness Validation
+
+Use this workflow when adding or auditing Anki cards for technical correctness:
+
+1. Search local sources under `files/`, relevant `questions/DP700-*.md`, and `apps/quiz/scripts/export-anki.mjs`.
+2. Search authoritative internet sources, prioritizing Microsoft Learn, the official DP-700 study guide, and Microsoft Fabric documentation.
+3. Add or update a card only when the answer is supported by the source. Put the source link directly in the card back.
+4. For PDF text or rendering, use `apps/api/.venv/bin/python`.
+
+When reporting an audit, classify findings as `Verified`, `Unsupported`, `Stale or ambiguous`, or `Needs source`.
+
+## Human-in-the-Loop Source Intake
+
+The user may place candidate study material under `files/` for review. Treat those files as user-provided reference material, not automatically trusted source material.
+
+For Anki cards:
+
+- Use the user-provided file to identify topics, gaps, or concepts.
+- Verify technical correctness against Microsoft Learn, the official DP-700 study guide, or Microsoft Fabric documentation.
+- Write cards in original wording.
+- Include the authoritative Microsoft source link in the card back.
+- Do not copy question text, answer choices, or explanations from exam dumps, recalled exam material, or commercial practice-test sites.
+
 ## Update Workflow
 
 1. Inspect the requested source:
@@ -53,6 +78,7 @@ Keep the front stable after import. Anki uses the first field to match existing 
    - Add exam-style, source-verified scenarios to `questions/DP700-*.md`, not directly to Anki.
    - Add quick recall or study-note cards to `files/DP-700 Consolidated Review.txt`.
    - Add PDF-derived concept cards in `export-anki.mjs` only when they are original summaries, not copied assessment items.
+   - Add internet-validated recall cards to `files/DP-700 Consolidated Review.txt` when the user wants Anki-only study cards rather than quiz-bank scenarios.
 3. Regenerate from WSL Ubuntu:
 
 ```bash

@@ -238,6 +238,100 @@ const pdfCards = [
     source: 'files/Module assessment - Training _ Microsoft Learn 3.pdf',
     tags: ['pdf', 'eventhouse', 'kql-performance'],
   },
+  {
+    front: 'Which KQL operator combines rows from two tables by matching key values?',
+    back: 'Use <code>join</code>. In KQL, the join operator merges rows from two tabular inputs by matching values in the specified columns.',
+    source: 'files/Module assessment - Training _ Microsoft Learn 5.pdf',
+    sourceUrl: 'https://learn.microsoft.com/en-us/kusto/query/join-operator?view=microsoft-fabric',
+    tags: ['pdf', 'eventhouse', 'kql'],
+  },
+  {
+    front: 'Which Eventstream transformation combines data from two streams using a matching condition?',
+    back: 'Use the Join transformation. In Fabric eventstreams, Join combines data from two streams when the configured matching condition is met.',
+    source: 'files/Module assessment - Training _ Microsoft Learn 5.pdf',
+    sourceUrl:
+      'https://learn.microsoft.com/en-us/fabric/real-time-intelligence/event-streams/process-events-using-event-processor-editor',
+    tags: ['pdf', 'eventstream', 'transformation'],
+  },
+  {
+    front: 'What should you verify when a Real-Time Dashboard tile is not showing current event data?',
+    back: 'Check the dashboard data source and refresh configuration. Real-Time Dashboard tiles query connected sources such as KQL databases, and live refresh must be enabled when the visual should update as new data arrives.',
+    source: 'files/Module assessment - Training _ Microsoft Learn 5.pdf',
+    sourceUrl: 'https://learn.microsoft.com/en-us/fabric/real-time-intelligence/dashboard-real-time-create',
+    tags: ['pdf', 'real-time-dashboard', 'kql'],
+  },
+  {
+    front: 'What Activator configuration is required before accurate streaming data can trigger automated actions?',
+    back: 'Define and activate rules that evaluate the relevant object properties and specify the action to run. Without rules, Activator has no condition/action logic to execute.',
+    source: 'files/Module assessment - Training _ Microsoft Learn 5.pdf',
+    sourceUrl: 'https://learn.microsoft.com/en-us/fabric/real-time-intelligence/data-activator/activator-introduction',
+    tags: ['pdf', 'activator', 'rules'],
+  },
+  {
+    front: 'Why map event fields to object properties in Fabric Activator?',
+    back: 'Activator rules evaluate object properties. Mapping the event fields to the correct properties ensures the rule is checking the intended values for each monitored object.',
+    source: 'files/Module assessment - Training _ Microsoft Learn 5.pdf',
+    sourceUrl: 'https://learn.microsoft.com/en-us/fabric/real-time-intelligence/data-activator/activator-introduction',
+    tags: ['pdf', 'activator', 'rules'],
+  },
+  {
+    front: 'How should Activator be configured to respond automatically to real-time anomaly thresholds?',
+    back: 'Create rules over the relevant metrics or properties, set threshold or pattern conditions, and attach actions such as notifications, pipelines, notebooks, or Power Automate flows.',
+    source: 'files/Module assessment - Training _ Microsoft Learn 5.pdf',
+    sourceUrl: 'https://learn.microsoft.com/en-us/fabric/real-time-intelligence/data-activator/activator-introduction',
+    tags: ['pdf', 'activator', 'automation'],
+  },
+  {
+    front: 'Which Real-Time Intelligence component should trigger rerouting or corrective workflows when a live traffic pattern is detected?',
+    back: 'Use Fabric Activator. Eventstreams can ingest and route events, and dashboards can visualize data, but Activator evaluates conditions and triggers actions when patterns or thresholds are detected.',
+    source: 'files/Module assessment - Training _ Microsoft Learn 5.pdf',
+    sourceUrl: 'https://learn.microsoft.com/en-us/fabric/real-time-intelligence/data-activator/activator-introduction',
+    tags: ['pdf', 'activator', 'real-time-intelligence'],
+  },
+  {
+    front: 'What are the three main component types in a Fabric eventstream?',
+    back: 'An eventstream is built from sources, optional transformations, and destinations. Sources bring events in, transformations process the events while they flow, and destinations receive the events for storage, analysis, alerts, or downstream integration.',
+    source: 'files/Module assessment - Training _ Microsoft Learn 8.pdf',
+    sourceUrl: 'https://learn.microsoft.com/en-us/fabric/real-time-intelligence/event-streams/overview',
+    tags: ['pdf', 'eventstream', 'components'],
+  },
+  {
+    front: 'What is the role of a source in a Fabric eventstream?',
+    back: 'A source is where the event data enters the eventstream. Fabric eventstreams can ingest from Microsoft services and non-Microsoft platforms, including connectors such as Event Hubs, IoT Hub, Kafka-style sources, sample data, and change-data-capture sources.',
+    source: 'files/Module assessment - Training _ Microsoft Learn 8.pdf',
+    sourceUrl: 'https://learn.microsoft.com/en-us/fabric/real-time-intelligence/event-streams/overview',
+    tags: ['pdf', 'eventstream', 'sources'],
+  },
+  {
+    front: 'Why add transformations to an eventstream before routing events to a destination?',
+    back: 'Transformations let you reshape event data while it is flowing, such as filtering events, managing fields, aggregating or grouping values over time windows, expanding arrays, joining streams, or using SQL-based processing.',
+    source: 'files/Module assessment - Training _ Microsoft Learn 8.pdf',
+    sourceUrl:
+      'https://learn.microsoft.com/en-us/fabric/real-time-intelligence/event-streams/process-events-using-event-processor-editor',
+    tags: ['pdf', 'eventstream', 'transformation'],
+  },
+  {
+    front: 'What is the role of a destination in a Fabric eventstream?',
+    back: 'A destination is where the eventstream sends events after optional processing. Destinations can support storage, analysis, alerts, or integration, such as Eventhouse or KQL database, Lakehouse, custom endpoint, derived stream, Spark notebook, or Fabric Activator.',
+    source: 'files/Module assessment - Training _ Microsoft Learn 8.pdf',
+    sourceUrl: 'https://learn.microsoft.com/en-us/fabric/real-time-intelligence/event-streams/overview',
+    tags: ['pdf', 'eventstream', 'destinations'],
+  },
+  {
+    front: 'What does the Fabric eventstream canvas help you design without code?',
+    back: 'The eventstream canvas is a visual editor for building the streaming pipeline by arranging source, transformation, and destination nodes. It lets you design and inspect event flow without writing code or managing streaming infrastructure.',
+    source: 'files/Module assessment - Training _ Microsoft Learn 8.pdf',
+    sourceUrl: 'https://learn.microsoft.com/en-us/fabric/real-time-intelligence/event-streams/overview',
+    tags: ['pdf', 'eventstream', 'canvas'],
+  },
+  {
+    front: 'In the bicycle eventstream example, what does the GroupByStreet transformation prepare for storage?',
+    back: 'It aggregates the bicycle events by street, such as summing bike counts by station street name, before routing the transformed results to an Eventhouse table for later KQL analysis.',
+    source: 'files/Module assessment - Training _ Microsoft Learn 8.pdf',
+    sourceUrl:
+      'https://learn.microsoft.com/en-us/fabric/real-time-intelligence/event-streams/process-events-using-event-processor-editor',
+    tags: ['pdf', 'eventstream', 'aggregation'],
+  },
 ];
 
 const sourceUrlByPdfPath = {
@@ -253,6 +347,10 @@ const sourceUrlByPdfPath = {
     'https://learn.microsoft.com/en-us/training/modules/query-data-kql-database-microsoft-fabric/6-knowledge-check',
   'files/Module assessment - Training _ Microsoft Learn 4.pdf':
     'https://learn.microsoft.com/en-us/training/modules/introduction-end-analytics-use-microsoft-fabric/5-knowledge-check',
+  'files/Module assessment - Training _ Microsoft Learn 5.pdf':
+    'https://learn.microsoft.com/en-us/fabric/real-time-intelligence/overview',
+  'files/Module assessment - Training _ Microsoft Learn 8.pdf':
+    'https://learn.microsoft.com/en-us/fabric/real-time-intelligence/event-streams/overview',
   'files/Work with data in a Microsoft Fabric eventhouse _ mslearn-fabric.pdf':
     'https://microsoftlearning.github.io/mslearn-fabric/Instructions/Labs/12-query-data-in-kql-database.html',
   'files/Work with data using Spark SQL - Training _ Microsoft Learn.pdf':
@@ -328,7 +426,7 @@ function questionCard(question) {
 }
 
 function pdfConceptCard(card) {
-  const url = sourceUrlByPdfPath[card.source];
+  const url = card.sourceUrl ?? sourceUrlByPdfPath[card.source];
   const link = url ? `<br><strong>Link:</strong> ${sourceLink(url)}` : '';
 
   return {

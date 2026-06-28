@@ -349,6 +349,20 @@ Add one tab-separated card per line to `files/DP-700 Consolidated Review.txt`:
 Front question<TAB>Back answer with explanation and source
 ```
 
+Anki-only cards may be added from authoritative internet validation. Use Microsoft Learn, the official DP-700 study guide, or Microsoft Fabric documentation as the source, include the link in the card back, and keep the wording original. Local files under `files/` can also be used as supporting evidence, but do not copy assessment or exam-style text verbatim into Anki.
+
+### Human-in-the-loop source intake
+
+The user may place candidate study material under `files/` for review. Treat those files as user-provided reference material, not automatically trusted source material.
+
+For Anki cards:
+
+- Use the user-provided file to identify topics, gaps, or concepts.
+- Verify technical correctness against Microsoft Learn, the official DP-700 study guide, or Microsoft Fabric documentation.
+- Write cards in original wording.
+- Include the authoritative Microsoft source link in the card back.
+- Do not copy question text, answer choices, or explanations from exam dumps, recalled exam material, or commercial practice-test sites.
+
 Before adding a card, search for a distinctive phrase from the front:
 
 ```bash
