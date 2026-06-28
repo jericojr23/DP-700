@@ -12,10 +12,10 @@ This file tracks coverage and links to the standalone DP-700 practice questions 
 
 | Domain | Foundation | Intermediate | Advanced | Total |
 |---|---:|---:|---:|---:|
-| Implement and manage an analytics solution | 3 | 3 | 2 | 8 |
+| Implement and manage an analytics solution | 3 | 4 | 2 | 9 |
 | Ingest and transform data | 9 | 6 | 6 | 21 |
-| Monitor and optimize an analytics solution | 3 | 3 | 2 | 8 |
-| **Total** | **15** | **12** | **10** | **37** |
+| Monitor and optimize an analytics solution | 5 | 4 | 4 | 13 |
+| **Total** | **17** | **14** | **12** | **43** |
 
 Update this table whenever a standalone question is added, removed, or changes domain or difficulty.
 
@@ -60,6 +60,12 @@ Update this table whenever a standalone question is added, removed, or changes d
 | [DP700-035](../DP700-035.md) | Inspect live destination activity | Monitor and optimize an analytics solution | Monitoring Eventstream ingestion activity | Foundation | Verified | 2026-06-28 |
 | [DP700-036](../DP700-036.md) | Configure a street-level tumbling window | Ingest and transform data | Eventstream Group by transformation configuration | Advanced | Verified | 2026-06-28 |
 | [DP700-037](../DP700-037.md) | Resolve an unstored transformation output | Monitor and optimize an analytics solution | Resolving Eventstream transformation configuration errors | Intermediate | Verified | 2026-06-28 |
+| [DP700-038](../DP700-038.md) | Build a KQL-backed dashboard visual | Monitor and optimize an analytics solution | Real-Time Dashboard KQL-backed tiles | Foundation | Verified | 2026-06-28 |
+| [DP700-039](../DP700-039.md) | Make a dashboard filter affect a visual | Monitor and optimize an analytics solution | Real-Time Dashboard parameters in KQL queries | Intermediate | Verified | 2026-06-28 |
+| [DP700-040](../DP700-040.md) | Keep dashboard visuals current efficiently | Monitor and optimize an analytics solution | Real-Time Dashboard Live refresh | Advanced | Verified | 2026-06-28 |
+| [DP700-041](../DP700-041.md) | Preserve viewer permissions in a dashboard | Implement and manage an analytics solution | Real-Time Dashboard data source authorization | Intermediate | Verified | 2026-06-28 |
+| [DP700-042](../DP700-042.md) | Show the latest observation per neighborhood | Monitor and optimize an analytics solution | KQL latest-observation queries for Real-Time Dashboard tiles | Advanced | Verified | 2026-06-28 |
+| [DP700-043](../DP700-043.md) | Turn a table tile into a bar chart | Monitor and optimize an analytics solution | Real-Time Dashboard tile visualization | Foundation | Verified | 2026-06-28 |
 
 ## Maintenance Rules
 
