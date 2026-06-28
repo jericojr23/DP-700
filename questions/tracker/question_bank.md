@@ -12,10 +12,10 @@ This file tracks coverage and links to the standalone DP-700 practice questions 
 
 | Domain | Foundation | Intermediate | Advanced | Total |
 |---|---:|---:|---:|---:|
-| Implement and manage an analytics solution | 3 | 4 | 2 | 9 |
-| Ingest and transform data | 9 | 6 | 6 | 21 |
-| Monitor and optimize an analytics solution | 5 | 4 | 4 | 13 |
-| **Total** | **17** | **14** | **12** | **43** |
+| Implement and manage an analytics solution | 4 | 4 | 2 | 10 |
+| Ingest and transform data | 9 | 7 | 6 | 22 |
+| Monitor and optimize an analytics solution | 5 | 5 | 4 | 14 |
+| **Total** | **18** | **16** | **12** | **46** |
 
 Update this table whenever a standalone question is added, removed, or changes domain or difficulty.
 
@@ -66,6 +66,9 @@ Update this table whenever a standalone question is added, removed, or changes d
 | [DP700-041](../DP700-041.md) | Preserve viewer permissions in a dashboard | Implement and manage an analytics solution | Real-Time Dashboard data source authorization | Intermediate | Verified | 2026-06-28 |
 | [DP700-042](../DP700-042.md) | Show the latest observation per neighborhood | Monitor and optimize an analytics solution | KQL latest-observation queries for Real-Time Dashboard tiles | Advanced | Verified | 2026-06-28 |
 | [DP700-043](../DP700-043.md) | Turn a table tile into a bar chart | Monitor and optimize an analytics solution | Real-Time Dashboard tile visualization | Foundation | Verified | 2026-06-28 |
+| [DP700-044](../DP700-044.md) | Partition curated files by date | Ingest and transform data | PySpark partitioned file output | Intermediate | Verified | 2026-06-28 |
+| [DP700-045](../DP700-045.md) | Correct data through the right SQL surface | Implement and manage an analytics solution | SQL analytics endpoint write limitations | Foundation | Verified | 2026-06-28 |
+| [DP700-046](../DP700-046.md) | Count errors in five-minute KQL windows | Monitor and optimize an analytics solution | KQL windowed error aggregation | Intermediate | Verified | 2026-06-28 |
 
 ## Maintenance Rules
 

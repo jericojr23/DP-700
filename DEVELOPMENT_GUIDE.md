@@ -337,6 +337,7 @@ $dp700-anki-export
 ### Source files
 
 - `files/DP-700 Consolidated Review.txt` stores Anki-only recall cards.
+- Source-verified CSV question sets under `files/` can be listed in `csvQuestionSetPaths` in `apps/quiz/scripts/export-anki.mjs` when they should be generated into the main import file.
 - `questions/DP700-*.md` stores full quiz-bank questions and should only be edited when adding or fixing canonical practice questions.
 - `apps/quiz/scripts/export-anki.mjs` generates `exports/anki/dp700-anki-import.tsv`.
 - `exports/anki/dp700-anki-import.tsv` is the file to import into Anki. Do not hand-edit it.

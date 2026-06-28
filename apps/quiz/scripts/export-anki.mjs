@@ -8,6 +8,75 @@ const scriptDir = path.dirname(fileURLToPath(import.meta.url));
 const repoRoot = path.resolve(scriptDir, '..', '..', '..');
 const outputPath = path.join(repoRoot, 'exports', 'anki', 'dp700-anki-import.tsv');
 const consolidatedReviewPath = path.join(repoRoot, 'files', 'DP-700 Consolidated Review.txt');
+const csvQuestionSetPaths = [
+  path.join(repoRoot, 'files', 'dp700_delta_optimization_vacuum_abfss_question_set.csv'),
+  path.join(repoRoot, 'files', 'dp700_validated_question_set_fabric_concepts.csv'),
+  path.join(repoRoot, 'files', 'dp700_coding_questions.csv'),
+];
+
+const wideCsvQuestionSetColumns = [
+  'QuestionID',
+  'Domain',
+  'Topic',
+  'Difficulty',
+  'QuestionType',
+  'Scenario',
+  'Question',
+  'OptionA',
+  'OptionB',
+  'OptionC',
+  'OptionD',
+  'CorrectAnswer',
+  'ReasonA',
+  'ReasonB',
+  'ReasonC',
+  'ReasonD',
+  'SourceURLs',
+  'VerificationDate',
+  'Status',
+];
+
+const optionRowCsvQuestionSetColumns = [
+  'Topic',
+  'Question',
+  'Option_Label',
+  'Answer_Choice',
+  'Validated_Correct_Option',
+  'Is_Validated_Correct',
+  'Validation_Status',
+  'Choice_Reasoning',
+  'Validation_Note',
+  'Source_Name',
+  'Source_URL',
+  'DP700_Domain',
+  'Difficulty',
+  'Verification_Date',
+];
+
+const numberedCsvQuestionSetColumns = [
+  'Number',
+  'Domain',
+  'Topic',
+  'Difficulty',
+  'Question_Type',
+  'Status',
+  'Verification_Date',
+  'Question',
+  'Option_A',
+  'Option_B',
+  'Option_C',
+  'Option_D',
+  'Correct_Option',
+  'Correct_Answer',
+  'Explanation_Correct',
+  'Why_A_Is_Wrong',
+  'Why_B_Is_Wrong',
+  'Why_C_Is_Wrong',
+  'Why_D_Is_Wrong',
+  'Source_Name',
+  'Source_URL',
+  'Conflict_Note',
+];
 
 const pdfCards = [
   {
@@ -401,6 +470,15 @@ function sourceLink(url) {
   return `<a href="${escapeHtml(url)}">${escapeHtml(url)}</a>`;
 }
 
+function sourceLinks(value) {
+  return value
+    .split(';')
+    .map((url) => url.trim())
+    .filter(Boolean)
+    .map(sourceLink)
+    .join('<br>');
+}
+
 function questionCard(question) {
   const choices = question.choices
     .map((choice) => `<li><strong>${choice.label}.</strong> ${inlineMarkdown(choice.text)}</li>`)
@@ -434,6 +512,319 @@ function pdfConceptCard(card) {
     back: `${card.back}<br><br><strong>Source:</strong> ${escapeHtml(card.source)}${link}`,
     tags: ['dp700', 'pdf-source', ...card.tags],
   };
+}
+
+function parseCsv(content) {
+  const rows = [];
+  let row = [];
+  let field = '';
+  let inQuotes = false;
+  const normalizedContent = content.replace(/^\uFEFF/, '').replace(/\r\n/g, '\n').replace(/\r/g, '\n');
+
+  for (let index = 0; index < normalizedContent.length; index += 1) {
+    const character = normalizedContent[index];
+    const nextCharacter = normalizedContent[index + 1];
+
+    if (character === '"' && inQuotes && nextCharacter === '"') {
+      field += '"';
+      index += 1;
+    } else if (character === '"') {
+      inQuotes = !inQuotes;
+    } else if (character === ',' && !inQuotes) {
+      row.push(field);
+      field = '';
+    } else if (character === '\n' && !inQuotes) {
+      row.push(field);
+      if (row.some((value) => value.trim())) rows.push(row);
+      row = [];
+      field = '';
+    } else {
+      field += character;
+    }
+  }
+
+  if (inQuotes) {
+    throw new Error('CSV has an unterminated quoted field');
+  }
+
+  if (field || row.length) {
+    row.push(field);
+    if (row.some((value) => value.trim())) rows.push(row);
+  }
+
+  return rows;
+}
+
+function hasColumns(headers, columns) {
+  return columns.every((column) => headers.includes(column));
+}
+
+function csvRowsToObjects(rows, sourcePath, requiredColumns) {
+  if (!rows.length) {
+    throw new Error(`CSV file is empty: ${path.relative(repoRoot, sourcePath)}`);
+  }
+
+  const [headers, ...dataRows] = rows;
+  const missingColumns = requiredColumns.filter((column) => !headers.includes(column));
+  if (missingColumns.length) {
+    throw new Error(
+      `${path.relative(repoRoot, sourcePath)} is missing required columns: ${missingColumns.join(', ')}`,
+    );
+  }
+
+  return dataRows.map((row, rowIndex) => {
+    if (row.length !== headers.length) {
+      throw new Error(
+        `${path.relative(repoRoot, sourcePath)} row ${rowIndex + 2} has ${row.length} fields; expected ${
+          headers.length
+        } from the header`,
+      );
+    }
+
+    return Object.fromEntries(headers.map((header, index) => [header, row[index].trim()]));
+  });
+}
+
+function wideCsvQuestionSetCard(row, sourcePath) {
+  const answer = row.CorrectAnswer.toUpperCase();
+  const optionByAnswer = {
+    A: row.OptionA,
+    B: row.OptionB,
+    C: row.OptionC,
+    D: row.OptionD,
+  };
+  const reasonByAnswer = {
+    A: row.ReasonA,
+    B: row.ReasonB,
+    C: row.ReasonC,
+    D: row.ReasonD,
+  };
+  const sourceSlug = slug(path.basename(sourcePath, path.extname(sourcePath)));
+
+  if (!optionByAnswer[answer]) {
+    throw new Error(`${path.relative(repoRoot, sourcePath)} ${row.QuestionID} has unsupported answer: ${answer}`);
+  }
+
+  const choices = ['A', 'B', 'C', 'D']
+    .map((label) => `<li><strong>${label}.</strong> ${inlineMarkdown(optionByAnswer[label])}</li>`)
+    .join('');
+  const reasons = ['A', 'B', 'C', 'D']
+    .map((label) => `<li><strong>${label}.</strong> ${inlineMarkdown(reasonByAnswer[label])}</li>`)
+    .join('');
+
+  return {
+    front: `<strong>CSV question set ${escapeHtml(row.QuestionID)}: ${escapeHtml(
+      row.Topic,
+    )}</strong><br><br>${inlineMarkdown(row.Scenario)}<br><br>${inlineMarkdown(
+      row.Question,
+    )}<br><br><ol type="A">${choices}</ol>`,
+    back: `<strong>Correct answer:</strong> ${escapeHtml(answer)}. ${inlineMarkdown(
+      optionByAnswer[answer],
+    )}<br><br><strong>Choice reasoning:</strong><ul>${reasons}</ul><br><br><strong>Status:</strong> ${escapeHtml(
+      row.Status,
+    )}<br><strong>Verification date:</strong> ${escapeHtml(
+      row.VerificationDate,
+    )}<br><strong>Sources:</strong><br>${sourceLinks(
+      row.SourceURLs,
+    )}<br><br><strong>Source file:</strong> ${escapeHtml(path.relative(repoRoot, sourcePath))}`,
+    tags: [
+      'dp700',
+      'csv-question-set',
+      sourceSlug,
+      row.QuestionID.toLowerCase(),
+      `domain-${slug(row.Domain)}`,
+      `difficulty-${slug(row.Difficulty)}`,
+      `topic-${slug(row.Topic)}`,
+    ],
+  };
+}
+
+function groupOptionRows(rows) {
+  const groupedRows = new Map();
+
+  for (const row of rows) {
+    const key = `${row.Topic}\u0000${row.Question}`;
+    const group = groupedRows.get(key) ?? [];
+    group.push(row);
+    groupedRows.set(key, group);
+  }
+
+  return [...groupedRows.values()];
+}
+
+function optionRowCsvQuestionSetCard(rows, sourcePath) {
+  const sourceSlug = slug(path.basename(sourcePath, path.extname(sourcePath)));
+  const [firstRow] = rows;
+  const rowsByLabel = new Map(rows.map((row) => [row.Option_Label.toUpperCase(), row]));
+  const orderedLabels = ['A', 'B', 'C', 'D'];
+  const missingLabels = orderedLabels.filter((label) => !rowsByLabel.has(label));
+  if (missingLabels.length) {
+    throw new Error(
+      `${path.relative(repoRoot, sourcePath)} "${firstRow.Topic}" is missing options: ${missingLabels.join(', ')}`,
+    );
+  }
+
+  const correctRows = rows.filter((row) => /^yes$/i.test(row.Is_Validated_Correct));
+  if (correctRows.length !== 1) {
+    throw new Error(
+      `${path.relative(repoRoot, sourcePath)} "${firstRow.Topic}" has ${correctRows.length} validated correct choices`,
+    );
+  }
+
+  const correctRow = correctRows[0];
+  const statusLabels = [...new Set(rows.map((row) => row.Validation_Status))];
+  const verificationStatus = statusLabels.join('; ');
+  const choices = orderedLabels
+    .map((label) => {
+      const row = rowsByLabel.get(label);
+      return `<li><strong>${label}.</strong> ${inlineMarkdown(row.Answer_Choice)}</li>`;
+    })
+    .join('');
+  const reasons = orderedLabels
+    .map((label) => {
+      const row = rowsByLabel.get(label);
+      return `<li><strong>${label}.</strong> ${inlineMarkdown(row.Choice_Reasoning)}</li>`;
+    })
+    .join('');
+
+  return {
+    front: `<strong>CSV question set ${escapeHtml(firstRow.Topic)}</strong><br><br>${inlineMarkdown(
+      firstRow.Question,
+    )}<br><br><ol type="A">${choices}</ol>`,
+    back: `<strong>Correct answer:</strong> ${escapeHtml(correctRow.Option_Label.toUpperCase())}. ${inlineMarkdown(
+      correctRow.Answer_Choice,
+    )}<br><br><strong>Choice reasoning:</strong><ul>${reasons}</ul><br><br><strong>Validation note:</strong> ${inlineMarkdown(
+      firstRow.Validation_Note,
+    )}<br><strong>Status:</strong> ${escapeHtml(verificationStatus)}<br><strong>Verification date:</strong> ${escapeHtml(
+      firstRow.Verification_Date,
+    )}<br><strong>Source:</strong> ${escapeHtml(firstRow.Source_Name)}<br><strong>Links:</strong><br>${sourceLinks(
+      firstRow.Source_URL,
+    )}<br><br><strong>Source file:</strong> ${escapeHtml(path.relative(repoRoot, sourcePath))}`,
+    tags: [
+      'dp700',
+      'csv-question-set',
+      sourceSlug,
+      slug(firstRow.Topic),
+      `domain-${slug(firstRow.DP700_Domain)}`,
+      `difficulty-${slug(firstRow.Difficulty)}`,
+    ],
+  };
+}
+
+function numberedCsvQuestionSetCard(row, sourcePath) {
+  const answer = row.Correct_Option.toUpperCase();
+  const optionByAnswer = {
+    A: row.Option_A,
+    B: row.Option_B,
+    C: row.Option_C,
+    D: row.Option_D,
+  };
+  const wrongReasonByAnswer = {
+    A: row.Why_A_Is_Wrong,
+    B: row.Why_B_Is_Wrong,
+    C: row.Why_C_Is_Wrong,
+    D: row.Why_D_Is_Wrong,
+  };
+  const sourceSlug = slug(path.basename(sourcePath, path.extname(sourcePath)));
+
+  if (!optionByAnswer[answer]) {
+    throw new Error(
+      `${path.relative(repoRoot, sourcePath)} question ${row.Number} has unsupported answer: ${answer}`,
+    );
+  }
+
+  const choices = ['A', 'B', 'C', 'D']
+    .map((label) => `<li><strong>${label}.</strong> ${inlineMarkdown(optionByAnswer[label])}</li>`)
+    .join('');
+  const reasons = ['A', 'B', 'C', 'D']
+    .map((label) => {
+      const reason = label === answer ? row.Explanation_Correct : wrongReasonByAnswer[label];
+      return `<li><strong>${label}.</strong> ${inlineMarkdown(reason)}</li>`;
+    })
+    .join('');
+  const conflictNote = row.Conflict_Note
+    ? `<br><br><strong>Conflict note:</strong> ${inlineMarkdown(row.Conflict_Note)}`
+    : '';
+  const correctText = row.Correct_Answer || optionByAnswer[answer];
+
+  return {
+    front: `<strong>CSV question set ${escapeHtml(row.Number)}: ${escapeHtml(
+      row.Topic,
+    )}</strong><br><br>${inlineMarkdown(row.Question)}<br><br><ol type="A">${choices}</ol>`,
+    back: `<strong>Correct answer:</strong> ${escapeHtml(answer)}. ${inlineMarkdown(
+      correctText,
+    )}<br><br><strong>Explanation:</strong><br>${inlineMarkdown(
+      row.Explanation_Correct,
+    )}<br><br><strong>Choice reasoning:</strong><ul>${reasons}</ul>${conflictNote}<br><br><strong>Status:</strong> ${escapeHtml(
+      row.Status,
+    )}<br><strong>Verification date:</strong> ${escapeHtml(
+      row.Verification_Date,
+    )}<br><strong>Source:</strong> ${escapeHtml(row.Source_Name)}<br><strong>Links:</strong><br>${sourceLinks(
+      row.Source_URL,
+    )}<br><br><strong>Source file:</strong> ${escapeHtml(path.relative(repoRoot, sourcePath))}`,
+    tags: [
+      'dp700',
+      'csv-question-set',
+      sourceSlug,
+      `q${slug(row.Number)}`,
+      `domain-${slug(row.Domain)}`,
+      `difficulty-${slug(row.Difficulty)}`,
+      `topic-${slug(row.Topic)}`,
+    ],
+  };
+}
+
+function loadCsvQuestionSetCards() {
+  const cards = [];
+  const skipped = [];
+
+  for (const sourcePath of csvQuestionSetPaths) {
+    if (!fs.existsSync(sourcePath)) continue;
+
+    const rows = parseCsv(fs.readFileSync(sourcePath, 'utf8'));
+    const [headers] = rows;
+    if (hasColumns(headers, wideCsvQuestionSetColumns)) {
+      cards.push(
+        ...csvRowsToObjects(rows, sourcePath, wideCsvQuestionSetColumns).map((row) =>
+          wideCsvQuestionSetCard(row, sourcePath),
+        ),
+      );
+    } else if (hasColumns(headers, optionRowCsvQuestionSetColumns)) {
+      const optionRows = csvRowsToObjects(rows, sourcePath, optionRowCsvQuestionSetColumns);
+      for (const questionRows of groupOptionRows(optionRows)) {
+        const [firstRow] = questionRows;
+        const statuses = [...new Set(questionRows.map((row) => row.Validation_Status))];
+        if (!statuses.every((status) => status.startsWith('Verified'))) {
+          skipped.push({
+            source: path.relative(repoRoot, sourcePath),
+            topic: firstRow.Topic,
+            reason: statuses.join('; '),
+          });
+          continue;
+        }
+
+        cards.push(optionRowCsvQuestionSetCard(questionRows, sourcePath));
+      }
+    } else if (hasColumns(headers, numberedCsvQuestionSetColumns)) {
+      const numberedRows = csvRowsToObjects(rows, sourcePath, numberedCsvQuestionSetColumns);
+      for (const row of numberedRows) {
+        if (!row.Status.startsWith('Verified')) {
+          skipped.push({
+            source: path.relative(repoRoot, sourcePath),
+            topic: row.Topic || `Question ${row.Number}`,
+            reason: row.Status || 'Unverified',
+          });
+          continue;
+        }
+
+        cards.push(numberedCsvQuestionSetCard(row, sourcePath));
+      }
+    } else {
+      throw new Error(`${path.relative(repoRoot, sourcePath)} does not match a supported CSV question-set schema`);
+    }
+  }
+
+  return { cards, skipped };
 }
 
 function splitTsvLine(line) {
@@ -496,6 +887,7 @@ function normalizedFront(front) {
   return front
     .replace(/^<strong>(?:PDF concept|Consolidated review):<\/strong>\s*/i, '')
     .replace(/^<strong>DP700-\d{3}:[^<]+<\/strong><br><br>/i, '')
+    .replace(/^<strong>CSV question set [^<]+<\/strong><br><br>/i, '')
     .replace(/<[^>]+>/g, ' ')
     .replace(/&[a-z]+;/gi, ' ')
     .toLowerCase()
@@ -524,8 +916,15 @@ function uniqueCards(cards) {
 }
 
 const { questions } = loadQuestionBank(repoRoot);
+const csvQuestionSetResult = loadCsvQuestionSetCards();
+const csvQuestionSetCards = csvQuestionSetResult.cards;
 const consolidatedReviewCards = loadConsolidatedReviewCards();
-const sourceCards = [...questions.map(questionCard), ...pdfCards.map(pdfConceptCard), ...consolidatedReviewCards];
+const sourceCards = [
+  ...questions.map(questionCard),
+  ...pdfCards.map(pdfConceptCard),
+  ...csvQuestionSetCards,
+  ...consolidatedReviewCards,
+];
 const { cards, skipped } = uniqueCards(sourceCards);
 const header = ['#separator:tab', '#html:true', '#notetype:Basic', '#deck:DP-700', '#tags column:3'];
 const output = `${header.join('\n')}\n${cards.map(serializeCard).join('\n')}\n`;
@@ -537,6 +936,11 @@ console.log(`Wrote ${cards.length} Anki cards to ${path.relative(repoRoot, outpu
 console.log(`Source cards: ${sourceCards.length}`);
 console.log(`Question cards: ${questions.length}`);
 console.log(`PDF concept cards: ${pdfCards.length}`);
+console.log(`CSV question-set cards: ${csvQuestionSetCards.length}`);
+console.log(`Skipped CSV question-set groups: ${csvQuestionSetResult.skipped.length}`);
+for (const skippedGroup of csvQuestionSetResult.skipped) {
+  console.log(`- ${skippedGroup.source}: ${skippedGroup.topic} (${skippedGroup.reason})`);
+}
 console.log(`Consolidated review cards: ${consolidatedReviewCards.length}`);
 console.log(`Skipped duplicate fronts: ${skipped.length}`);
 for (const skippedCard of skipped) {
