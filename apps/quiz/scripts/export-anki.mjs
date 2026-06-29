@@ -509,7 +509,7 @@ function pdfConceptCard(card) {
 
   return {
     front: `<strong>PDF concept:</strong> ${card.front}`,
-    back: `${card.back}<br><br><strong>Source:</strong> ${escapeHtml(card.source)}${link}`,
+    back: `${card.back}<br><br><strong>Source:</strong> Microsoft learning source${link}`,
     tags: ['dp700', 'pdf-source', ...card.tags],
   };
 }
@@ -626,7 +626,7 @@ function wideCsvQuestionSetCard(row, sourcePath) {
       row.VerificationDate,
     )}<br><strong>Sources:</strong><br>${sourceLinks(
       row.SourceURLs,
-    )}<br><br><strong>Source file:</strong> ${escapeHtml(path.relative(repoRoot, sourcePath))}`,
+    )}`,
     tags: [
       'dp700',
       'csv-question-set',
@@ -699,7 +699,7 @@ function optionRowCsvQuestionSetCard(rows, sourcePath) {
       firstRow.Verification_Date,
     )}<br><strong>Source:</strong> ${escapeHtml(firstRow.Source_Name)}<br><strong>Links:</strong><br>${sourceLinks(
       firstRow.Source_URL,
-    )}<br><br><strong>Source file:</strong> ${escapeHtml(path.relative(repoRoot, sourcePath))}`,
+    )}`,
     tags: [
       'dp700',
       'csv-question-set',
@@ -761,7 +761,7 @@ function numberedCsvQuestionSetCard(row, sourcePath) {
       row.Verification_Date,
     )}<br><strong>Source:</strong> ${escapeHtml(row.Source_Name)}<br><strong>Links:</strong><br>${sourceLinks(
       row.Source_URL,
-    )}<br><br><strong>Source file:</strong> ${escapeHtml(path.relative(repoRoot, sourcePath))}`,
+    )}`,
     tags: [
       'dp700',
       'csv-question-set',
@@ -853,6 +853,10 @@ function splitTsvLine(line) {
   return fields;
 }
 
+function stripLocalSourceNotes(value) {
+  return value.replace(/(?:<br>\s*){2}Local support: files\/.*?(?=(?:<br>\s*){2}|$)/gi, '');
+}
+
 function loadConsolidatedReviewCards() {
   if (!fs.existsSync(consolidatedReviewPath)) return [];
 
@@ -869,7 +873,7 @@ function loadConsolidatedReviewCards() {
 
       return {
         front: `<strong>Consolidated review:</strong> ${front}`,
-        back: `${back}<br><br><strong>Source file:</strong> ${path.relative(repoRoot, consolidatedReviewPath)}`,
+        back: stripLocalSourceNotes(back),
         tags: ['dp700', 'consolidated-review'],
       };
     });
