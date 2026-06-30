@@ -12,7 +12,24 @@ const csvQuestionSetPaths = [
   path.join(repoRoot, 'files', 'dp700_delta_optimization_vacuum_abfss_question_set.csv'),
   path.join(repoRoot, 'files', 'dp700_validated_question_set_fabric_concepts.csv'),
   path.join(repoRoot, 'files', 'dp700_coding_questions.csv'),
+  path.join(repoRoot, 'files', 'dp700_create_rules_in_activator_questions.csv'),
+  path.join(repoRoot, 'files', 'delta_parquet_spark_catalog_questions.csv'),
+  path.join(repoRoot, 'files', 'dp700_kql_eventhouse_questions.csv'),
+  path.join(repoRoot, 'files', 'dp700_kql_missing_dimension_question.csv'),
+  path.join(repoRoot, 'files', 'dp700_windowing_questions.csv'),
+  path.join(repoRoot, 'files', 'activator_dp700_questions.csv'),
+  path.join(repoRoot, 'files', 'monitoring_hub_activator_dp700_questions.csv'),
 ];
+
+const activatorRulesSourceUrls = [
+  'https://learn.microsoft.com/en-us/fabric/real-time-intelligence/data-activator/activator-create-activators',
+  'https://learn.microsoft.com/en-us/fabric/real-time-intelligence/data-activator/activator-rules-overview',
+].join(';');
+
+const monitoringHubActivatorSourceUrls = [
+  'https://learn.microsoft.com/en-us/fabric/data-factory/monitoring-hub-pipeline-runs',
+  'https://learn.microsoft.com/en-us/fabric/real-time-intelligence/data-activator/activator-rules-overview',
+].join(';');
 
 const wideCsvQuestionSetColumns = [
   'QuestionID',
@@ -76,6 +93,159 @@ const numberedCsvQuestionSetColumns = [
   'Source_Name',
   'Source_URL',
   'Conflict_Note',
+];
+
+const answerKeyCsvQuestionSetColumns = [
+  'Question_ID',
+  'Domain',
+  'Topic',
+  'Difficulty',
+  'Question_Type',
+  'Status',
+  'Source',
+  'Verification_Date',
+  'Question',
+  'Option_A',
+  'Option_B',
+  'Option_C',
+  'Option_D',
+  'Option_E',
+  'Correct_Answer',
+  'Correct_Explanation',
+  'Distractor_Explanations',
+];
+
+const correctOptionCsvQuestionSetColumns = [
+  'Question_ID',
+  'Domain',
+  'Topic',
+  'Difficulty',
+  'Question_Type',
+  'Question',
+  'Option_A',
+  'Option_B',
+  'Option_C',
+  'Option_D',
+  'Correct_Option',
+  'Correct_Answer',
+  'Explanation',
+  'Distractor_Explanations',
+  'Source',
+  'Verification_Date',
+  'Status',
+];
+
+const eventhouseCsvQuestionSetColumns = [
+  'Question_ID',
+  'Domain',
+  'Topic',
+  'Difficulty',
+  'Question_Type',
+  'Scenario',
+  'Option_A',
+  'Option_B',
+  'Option_C',
+  'Option_D',
+  'Correct_Answer',
+  'Correct_Answer_Text',
+  'Explanation',
+  'Distractor_A',
+  'Distractor_B',
+  'Distractor_C',
+  'Distractor_D',
+  'Source_URL',
+  'Verification_Date',
+  'Status',
+];
+
+const missingDimensionCsvQuestionSetColumns = [
+  'Question_ID',
+  'Domain',
+  'Topic',
+  'Difficulty',
+  'Question_Type',
+  'Question',
+  'Option_A',
+  'Option_B',
+  'Option_C',
+  'Option_D',
+  'Correct_Answer',
+  'Correct_Explanation',
+  'Why_A_Is_Wrong',
+  'Why_C_Is_Wrong',
+  'Why_D_Is_Wrong',
+  'Source_Name',
+  'Source_URL',
+  'Verification_Date',
+  'Status',
+];
+
+const windowingCsvQuestionSetColumns = [
+  'Question_ID',
+  'Domain',
+  'Topic',
+  'Difficulty',
+  'Question_Type',
+  'Question',
+  'Option_A',
+  'Option_B',
+  'Option_C',
+  'Option_D',
+  'Correct_Answer',
+  'Correct_Option',
+  'Explanation',
+  'Why_A',
+  'Why_B',
+  'Why_C',
+  'Why_D',
+  'Source',
+  'Verification_Date',
+  'Status',
+];
+
+const activatorCsvQuestionSetColumns = [
+  'Question_ID',
+  'Domain',
+  'Topic',
+  'Difficulty',
+  'Question_Type',
+  'Question',
+  'Option_A',
+  'Option_B',
+  'Option_C',
+  'Option_D',
+  'Correct_Answer',
+  'Correct_Explanation',
+  'Distractor_A_Explanation',
+  'Distractor_B_Explanation',
+  'Distractor_C_Explanation',
+  'Distractor_D_Explanation',
+  'Source_Files',
+  'Verification_Date',
+  'Status',
+];
+
+const monitoringHubActivatorCsvQuestionSetColumns = [
+  'Question_ID',
+  'Domain',
+  'Topic',
+  'Difficulty',
+  'Question_Type',
+  'Question',
+  'Option_A',
+  'Option_B',
+  'Option_C',
+  'Option_D',
+  'Correct_Answer',
+  'Correct_Answer_Text',
+  'Explanation',
+  'Why_A_Is_Wrong',
+  'Why_B_Is_Wrong',
+  'Why_C_Is_Wrong',
+  'Why_D_Is_Wrong',
+  'Source',
+  'Verification_Date',
+  'Status',
 ];
 
 const pdfCards = [
@@ -400,6 +570,90 @@ const pdfCards = [
     sourceUrl:
       'https://learn.microsoft.com/en-us/fabric/real-time-intelligence/event-streams/process-events-using-event-processor-editor',
     tags: ['pdf', 'eventstream', 'aggregation'],
+  },
+  {
+    front: 'What setup sequence makes Fabric Activator ready to detect business conditions and respond?',
+    back: 'Connect the data source, model incoming events as objects with properties, define rules over those objects, and configure actions for the rule response. A rule without the supporting data model or action cannot complete the full monitor-and-respond workflow.',
+    source: 'files/Module assessment - Training _ Microsoft Learn 12.pdf',
+    sourceUrl: 'https://learn.microsoft.com/en-us/fabric/real-time-intelligence/data-activator/activator-create-activators',
+    tags: ['pdf', 'activator', 'setup'],
+  },
+  {
+    front: 'If an Activator rule condition is met but no alert or workflow runs, what should you check first?',
+    back: 'Check whether an action is configured and the rule has been saved and started. Rules evaluate conditions, but actions are what turn a matched condition into a notification, workflow, pipeline, notebook, or other response.',
+    source: 'files/Module assessment - Training _ Microsoft Learn 12.pdf',
+    sourceUrl: 'https://learn.microsoft.com/en-us/fabric/real-time-intelligence/data-activator/activator-rules-overview',
+    tags: ['pdf', 'activator', 'actions'],
+  },
+  {
+    front: 'Why create an object from an eventstream before writing some Activator rules?',
+    back: 'An object groups related event data around a business entity, such as one package, using a unique identifier and selected properties. That lets rules evaluate the state of each entity instead of treating the stream as unrelated rows.',
+    source: 'files/Use Activator in Fabric.pdf',
+    sourceUrl: 'https://learn.microsoft.com/en-us/fabric/real-time-intelligence/data-activator/activator-create-activators',
+    tags: ['pdf', 'activator', 'objects'],
+  },
+  {
+    front: 'In the Activator package lab, which fields define a Redmond package object for rule targeting?',
+    back: 'Use <code>PackageId</code> as the unique identifier and include properties such as <code>City</code>, <code>ColdChainType</code>, <code>SpecialCare</code>, and <code>Temperature</code>. Those fields give the rule both the entity identity and the business attributes needed for filtering and monitoring.',
+    source: 'files/Use Activator in Fabric.pdf',
+    sourceUrl: 'https://learn.microsoft.com/en-us/fabric/real-time-intelligence/data-activator/activator-create-activators',
+    tags: ['pdf', 'activator', 'objects'],
+  },
+  {
+    front: 'How do property filters keep an Activator rule focused on the intended business subset?',
+    back: 'Property filters narrow which events or object instances are evaluated before the action runs. For example, a medicine-shipping rule can filter to a city, special-care type, and cold-chain type so the rule does not fire for unrelated packages.',
+    source: 'files/Use Activator in Fabric.pdf',
+    sourceUrl: 'https://learn.microsoft.com/en-us/fabric/real-time-intelligence/data-activator/activator-rules-overview',
+    tags: ['pdf', 'activator', 'filters'],
+  },
+  {
+    front: 'What is the difference between saving an Activator rule and saving and starting it?',
+    back: 'Saving stores the rule configuration. Saving and starting activates the rule so Activator begins evaluating incoming data and can run the configured action when the condition is met.',
+    source: 'files/Use Activator in Fabric.pdf',
+    sourceUrl: 'https://learn.microsoft.com/en-us/fabric/real-time-intelligence/data-activator/activator-rules-overview',
+    tags: ['pdf', 'activator', 'rules'],
+  },
+  {
+    front: 'When is an email action a good fit in Fabric Activator?',
+    back: 'Use email when recipients need detailed context they can review later, such as within hours or days, and the response does not require immediate team coordination.',
+    source: 'files/Configure actions in Activator.pdf',
+    sourceUrl: 'https://learn.microsoft.com/en-us/fabric/real-time-intelligence/data-activator/activator-rules-overview',
+    tags: ['pdf', 'activator', 'actions', 'email'],
+  },
+  {
+    front: 'When is a Teams action a good fit in Fabric Activator?',
+    back: 'Use Teams when the rule response needs quick visibility, discussion, and coordination with a person or channel as soon as the condition is detected.',
+    source: 'files/Configure actions in Activator.pdf',
+    sourceUrl: 'https://learn.microsoft.com/en-us/fabric/real-time-intelligence/data-activator/activator-rules-overview',
+    tags: ['pdf', 'activator', 'actions', 'teams'],
+  },
+  {
+    front: 'When should an Activator rule use a Power Automate action?',
+    back: 'Use Power Automate when the response should run a multi-step business process across apps or services, such as creating tickets, updating records, or coordinating a reorder workflow.',
+    source: 'files/Configure actions in Activator.pdf',
+    sourceUrl: 'https://learn.microsoft.com/en-us/fabric/real-time-intelligence/data-activator/activator-rules-overview',
+    tags: ['pdf', 'activator', 'actions', 'power-automate'],
+  },
+  {
+    front: 'When should an Activator rule use a Fabric item action?',
+    back: 'Use a Fabric item action when a detected condition should kick off further data processing or analysis, such as running a pipeline or notebook in response to the event.',
+    source: 'files/Configure actions in Activator.pdf',
+    sourceUrl: 'https://learn.microsoft.com/en-us/fabric/real-time-intelligence/data-activator/activator-rules-overview',
+    tags: ['pdf', 'activator', 'actions', 'fabric-items'],
+  },
+  {
+    front: 'In an Activator rule, what does the Monitor section decide?',
+    back: 'The Monitor section chooses the property Activator watches and, when needed, how readings are summarized. It is where you decide whether the rule watches a raw value, an average, a minimum or maximum, a count, or a total over a time window.',
+    source: 'files/Configure rules in Activator.pdf',
+    sourceUrl: 'https://learn.microsoft.com/en-us/fabric/real-time-intelligence/data-activator/activator-rules-overview',
+    tags: ['pdf', 'activator', 'rules', 'monitor'],
+  },
+  {
+    front: 'In an Activator rule, what does the Condition section decide?',
+    back: 'The Condition section defines when Activator should act. It sets the detection approach, threshold or comparison value, and occurrence behavior, such as acting every time or only after the condition has stayed true for a duration.',
+    source: 'files/Configure rules in Activator.pdf',
+    sourceUrl: 'https://learn.microsoft.com/en-us/fabric/real-time-intelligence/data-activator/activator-rules-overview',
+    tags: ['pdf', 'activator', 'rules', 'conditions'],
   },
 ];
 
@@ -774,6 +1028,296 @@ function numberedCsvQuestionSetCard(row, sourcePath) {
   };
 }
 
+function splitAnswerLabels(value) {
+  return value
+    .split(/[;,]/)
+    .map((label) => label.trim().toUpperCase())
+    .filter(Boolean);
+}
+
+function answerKeyCsvQuestionSetCard(row, sourcePath) {
+  const answerLabels = splitAnswerLabels(row.Correct_Answer);
+  const optionByAnswer = {
+    A: row.Option_A,
+    B: row.Option_B,
+    C: row.Option_C,
+    D: row.Option_D,
+    E: row.Option_E,
+  };
+  const orderedLabels = ['A', 'B', 'C', 'D', 'E'].filter((label) => optionByAnswer[label]);
+  const sourceSlug = slug(path.basename(sourcePath, path.extname(sourcePath)));
+
+  if (!answerLabels.length) {
+    throw new Error(`${path.relative(repoRoot, sourcePath)} ${row.Question_ID} is missing a correct answer`);
+  }
+
+  const unsupportedAnswers = answerLabels.filter((label) => !optionByAnswer[label]);
+  if (unsupportedAnswers.length) {
+    throw new Error(
+      `${path.relative(repoRoot, sourcePath)} ${row.Question_ID} has unsupported answers: ${unsupportedAnswers.join(
+        ', ',
+      )}`,
+    );
+  }
+
+  if (/single/i.test(row.Question_Type) && answerLabels.length !== 1) {
+    throw new Error(`${path.relative(repoRoot, sourcePath)} ${row.Question_ID} must have exactly one answer`);
+  }
+
+  if (/multiple/i.test(row.Question_Type) && answerLabels.length < 2) {
+    throw new Error(`${path.relative(repoRoot, sourcePath)} ${row.Question_ID} must have multiple answers`);
+  }
+
+  const choices = orderedLabels
+    .map((label) => `<li><strong>${label}.</strong> ${inlineMarkdown(optionByAnswer[label])}</li>`)
+    .join('');
+  const answerText = answerLabels
+    .map((label) => `<strong>${label}.</strong> ${inlineMarkdown(optionByAnswer[label])}`)
+    .join('<br>');
+  const answerLabel = answerLabels.length === 1 ? 'Correct answer' : 'Correct answers';
+  const distractorExplanation = row.Distractor_Explanations
+    ? `<br><br><strong>Distractor rationale:</strong><br>${inlineMarkdown(row.Distractor_Explanations)}`
+    : '';
+
+  return {
+    front: `<strong>CSV question set ${escapeHtml(row.Question_ID)}: ${escapeHtml(
+      row.Topic,
+    )}</strong><br><br>${inlineMarkdown(row.Question)}<br><br><ol type="A">${choices}</ol>`,
+    back: `<strong>${answerLabel}:</strong><br>${answerText}<br><br><strong>Explanation:</strong><br>${inlineMarkdown(
+      row.Correct_Explanation,
+    )}${distractorExplanation}<br><br><strong>Status:</strong> ${escapeHtml(
+      row.Status,
+    )}<br><strong>Verification date:</strong> ${escapeHtml(
+      row.Verification_Date,
+    )}<br><strong>Source:</strong> Microsoft Fabric Activator rules<br><strong>Links:</strong><br>${sourceLinks(
+      activatorRulesSourceUrls,
+    )}`,
+    tags: [
+      'dp700',
+      'csv-question-set',
+      sourceSlug,
+      row.Question_ID.toLowerCase(),
+      `domain-${slug(row.Domain)}`,
+      `difficulty-${slug(row.Difficulty)}`,
+      `topic-${slug(row.Topic)}`,
+    ],
+  };
+}
+
+function correctOptionCsvQuestionSetCard(row, sourcePath) {
+  const answerLabels = splitAnswerLabels(row.Correct_Option);
+  const optionByAnswer = {
+    A: row.Option_A,
+    B: row.Option_B,
+    C: row.Option_C,
+    D: row.Option_D,
+  };
+  const orderedLabels = ['A', 'B', 'C', 'D'].filter((label) => optionByAnswer[label]);
+  const sourceSlug = slug(path.basename(sourcePath, path.extname(sourcePath)));
+
+  if (!answerLabels.length) {
+    throw new Error(`${path.relative(repoRoot, sourcePath)} ${row.Question_ID} is missing a correct answer`);
+  }
+
+  const unsupportedAnswers = answerLabels.filter((label) => !optionByAnswer[label]);
+  if (unsupportedAnswers.length) {
+    throw new Error(
+      `${path.relative(repoRoot, sourcePath)} ${row.Question_ID} has unsupported answers: ${unsupportedAnswers.join(
+        ', ',
+      )}`,
+    );
+  }
+
+  if (/single/i.test(row.Question_Type) && answerLabels.length !== 1) {
+    throw new Error(`${path.relative(repoRoot, sourcePath)} ${row.Question_ID} must have exactly one answer`);
+  }
+
+  if (/multiple/i.test(row.Question_Type) && answerLabels.length < 2) {
+    throw new Error(`${path.relative(repoRoot, sourcePath)} ${row.Question_ID} must have multiple answers`);
+  }
+
+  const choices = orderedLabels
+    .map((label) => `<li><strong>${label}.</strong> ${inlineMarkdown(optionByAnswer[label])}</li>`)
+    .join('');
+  const answerText = answerLabels
+    .map((label) => `<strong>${label}.</strong> ${inlineMarkdown(row.Correct_Answer || optionByAnswer[label])}`)
+    .join('<br>');
+  const answerLabel = answerLabels.length === 1 ? 'Correct answer' : 'Correct answers';
+  const distractorExplanation = row.Distractor_Explanations
+    ? `<br><br><strong>Distractor rationale:</strong><br>${inlineMarkdown(row.Distractor_Explanations)}`
+    : '';
+
+  return {
+    front: `<strong>CSV question set ${escapeHtml(row.Question_ID)}: ${escapeHtml(
+      row.Topic,
+    )}</strong><br><br>${inlineMarkdown(row.Question)}<br><br><ol type="A">${choices}</ol>`,
+    back: `<strong>${answerLabel}:</strong><br>${answerText}<br><br><strong>Explanation:</strong><br>${inlineMarkdown(
+      row.Explanation,
+    )}${distractorExplanation}<br><br><strong>Status:</strong> ${escapeHtml(
+      row.Status,
+    )}<br><strong>Verification date:</strong> ${escapeHtml(
+      row.Verification_Date,
+    )}<br><strong>Links:</strong><br>${sourceLinks(row.Source)}`,
+    tags: [
+      'dp700',
+      'csv-question-set',
+      sourceSlug,
+      row.Question_ID.toLowerCase(),
+      `domain-${slug(row.Domain)}`,
+      `difficulty-${slug(row.Difficulty)}`,
+      `topic-${slug(row.Topic)}`,
+    ],
+  };
+}
+
+function singleAnswerCsvQuestionSetCard(row, sourcePath, schema) {
+  const answer = row[schema.answerColumn].toUpperCase();
+  const optionByAnswer = {
+    A: row.Option_A,
+    B: row.Option_B,
+    C: row.Option_C,
+    D: row.Option_D,
+  };
+  const reasonByAnswer = Object.fromEntries(
+    Object.entries(schema.reasonColumns).map(([label, column]) => [label, row[column]]),
+  );
+  const sourceSlug = slug(path.basename(sourcePath, path.extname(sourcePath)));
+
+  if (!optionByAnswer[answer]) {
+    throw new Error(`${path.relative(repoRoot, sourcePath)} ${row.Question_ID} has unsupported answer: ${answer}`);
+  }
+
+  const prompt = row[schema.promptColumn ?? 'Question'];
+  const scenario = schema.scenarioColumn && row[schema.scenarioColumn] ? `${paragraphs(row[schema.scenarioColumn])}<br><br>` : '';
+  const choices = ['A', 'B', 'C', 'D']
+    .map((label) => `<li><strong>${label}.</strong> ${paragraphs(optionByAnswer[label])}</li>`)
+    .join('');
+  const reasons = ['A', 'B', 'C', 'D']
+    .map((label) => `<li><strong>${label}.</strong> ${paragraphs(reasonByAnswer[label])}</li>`)
+    .join('');
+  const sourceName =
+    schema.sourceNameColumn && row[schema.sourceNameColumn]
+      ? `<br><strong>Source:</strong> ${escapeHtml(row[schema.sourceNameColumn])}`
+      : '';
+
+  return {
+    front: `<strong>CSV question set ${escapeHtml(row.Question_ID)}: ${escapeHtml(
+      row.Topic,
+    )}</strong><br><br>${scenario}${paragraphs(prompt)}<br><br><ol type="A">${choices}</ol>`,
+    back: `<strong>Correct answer:</strong> ${escapeHtml(answer)}. ${paragraphs(
+      row[schema.answerTextColumn] || optionByAnswer[answer],
+    )}<br><br><strong>Explanation:</strong><br>${paragraphs(
+      row[schema.explanationColumn],
+    )}<br><br><strong>Choice reasoning:</strong><ul>${reasons}</ul><br><br><strong>Status:</strong> ${escapeHtml(
+      row.Status,
+    )}<br><strong>Verification date:</strong> ${escapeHtml(row.Verification_Date)}${sourceName}<br><strong>Links:</strong><br>${sourceLinks(
+      row[schema.sourceUrlColumn],
+    )}`,
+    tags: [
+      'dp700',
+      'csv-question-set',
+      sourceSlug,
+      row.Question_ID.toLowerCase(),
+      `domain-${slug(row.Domain)}`,
+      `difficulty-${slug(row.Difficulty)}`,
+      `topic-${slug(row.Topic)}`,
+    ],
+  };
+}
+
+function eventhouseCsvQuestionSetCard(row, sourcePath) {
+  return singleAnswerCsvQuestionSetCard(row, sourcePath, {
+    answerColumn: 'Correct_Answer',
+    answerTextColumn: 'Correct_Answer_Text',
+    explanationColumn: 'Explanation',
+    promptColumn: 'Scenario',
+    reasonColumns: {
+      A: 'Distractor_A',
+      B: 'Distractor_B',
+      C: 'Distractor_C',
+      D: 'Distractor_D',
+    },
+    sourceUrlColumn: 'Source_URL',
+  });
+}
+
+function missingDimensionCsvQuestionSetCard(row, sourcePath) {
+  const correctReasonColumn = `Why_${row.Correct_Answer.toUpperCase()}_Is_Wrong`;
+  const normalizedRow = {
+    ...row,
+    [correctReasonColumn]: 'Correct answer.',
+  };
+
+  return singleAnswerCsvQuestionSetCard(normalizedRow, sourcePath, {
+    answerColumn: 'Correct_Answer',
+    explanationColumn: 'Correct_Explanation',
+    reasonColumns: {
+      A: 'Why_A_Is_Wrong',
+      B: 'Why_B_Is_Wrong',
+      C: 'Why_C_Is_Wrong',
+      D: 'Why_D_Is_Wrong',
+    },
+    sourceNameColumn: 'Source_Name',
+    sourceUrlColumn: 'Source_URL',
+  });
+}
+
+function windowingCsvQuestionSetCard(row, sourcePath) {
+  return singleAnswerCsvQuestionSetCard(row, sourcePath, {
+    answerColumn: 'Correct_Answer',
+    answerTextColumn: 'Correct_Option',
+    explanationColumn: 'Explanation',
+    reasonColumns: {
+      A: 'Why_A',
+      B: 'Why_B',
+      C: 'Why_C',
+      D: 'Why_D',
+    },
+    sourceUrlColumn: 'Source',
+  });
+}
+
+function activatorCsvQuestionSetCard(row, sourcePath) {
+  const normalizedRow = {
+    ...row,
+    Source_URL: activatorRulesSourceUrls,
+  };
+
+  return singleAnswerCsvQuestionSetCard(normalizedRow, sourcePath, {
+    answerColumn: 'Correct_Answer',
+    explanationColumn: 'Correct_Explanation',
+    reasonColumns: {
+      A: 'Distractor_A_Explanation',
+      B: 'Distractor_B_Explanation',
+      C: 'Distractor_C_Explanation',
+      D: 'Distractor_D_Explanation',
+    },
+    sourceNameColumn: 'Source_Files',
+    sourceUrlColumn: 'Source_URL',
+  });
+}
+
+function monitoringHubActivatorCsvQuestionSetCard(row, sourcePath) {
+  const normalizedRow = {
+    ...row,
+    Source_URL: monitoringHubActivatorSourceUrls,
+  };
+
+  return singleAnswerCsvQuestionSetCard(normalizedRow, sourcePath, {
+    answerColumn: 'Correct_Answer',
+    answerTextColumn: 'Correct_Answer_Text',
+    explanationColumn: 'Explanation',
+    reasonColumns: {
+      A: 'Why_A_Is_Wrong',
+      B: 'Why_B_Is_Wrong',
+      C: 'Why_C_Is_Wrong',
+      D: 'Why_D_Is_Wrong',
+    },
+    sourceNameColumn: 'Source',
+    sourceUrlColumn: 'Source_URL',
+  });
+}
+
 function loadCsvQuestionSetCards() {
   const cards = [];
   const skipped = [];
@@ -818,6 +1362,104 @@ function loadCsvQuestionSetCards() {
         }
 
         cards.push(numberedCsvQuestionSetCard(row, sourcePath));
+      }
+    } else if (hasColumns(headers, answerKeyCsvQuestionSetColumns)) {
+      const answerKeyRows = csvRowsToObjects(rows, sourcePath, answerKeyCsvQuestionSetColumns);
+      for (const row of answerKeyRows) {
+        if (!row.Status.startsWith('Verified')) {
+          skipped.push({
+            source: path.relative(repoRoot, sourcePath),
+            topic: row.Topic || row.Question_ID,
+            reason: row.Status || 'Unverified',
+          });
+          continue;
+        }
+
+        cards.push(answerKeyCsvQuestionSetCard(row, sourcePath));
+      }
+    } else if (hasColumns(headers, correctOptionCsvQuestionSetColumns)) {
+      const correctOptionRows = csvRowsToObjects(rows, sourcePath, correctOptionCsvQuestionSetColumns);
+      for (const row of correctOptionRows) {
+        if (!row.Status.startsWith('Verified')) {
+          skipped.push({
+            source: path.relative(repoRoot, sourcePath),
+            topic: row.Topic || row.Question_ID,
+            reason: row.Status || 'Unverified',
+          });
+          continue;
+        }
+
+        cards.push(correctOptionCsvQuestionSetCard(row, sourcePath));
+      }
+    } else if (hasColumns(headers, eventhouseCsvQuestionSetColumns)) {
+      const eventhouseRows = csvRowsToObjects(rows, sourcePath, eventhouseCsvQuestionSetColumns);
+      for (const row of eventhouseRows) {
+        if (!row.Status.startsWith('Verified')) {
+          skipped.push({
+            source: path.relative(repoRoot, sourcePath),
+            topic: row.Topic || row.Question_ID,
+            reason: row.Status || 'Unverified',
+          });
+          continue;
+        }
+
+        cards.push(eventhouseCsvQuestionSetCard(row, sourcePath));
+      }
+    } else if (hasColumns(headers, missingDimensionCsvQuestionSetColumns)) {
+      const missingDimensionRows = csvRowsToObjects(rows, sourcePath, missingDimensionCsvQuestionSetColumns);
+      for (const row of missingDimensionRows) {
+        if (!row.Status.startsWith('Verified')) {
+          skipped.push({
+            source: path.relative(repoRoot, sourcePath),
+            topic: row.Topic || row.Question_ID,
+            reason: row.Status || 'Unverified',
+          });
+          continue;
+        }
+
+        cards.push(missingDimensionCsvQuestionSetCard(row, sourcePath));
+      }
+    } else if (hasColumns(headers, windowingCsvQuestionSetColumns)) {
+      const windowingRows = csvRowsToObjects(rows, sourcePath, windowingCsvQuestionSetColumns);
+      for (const row of windowingRows) {
+        if (!row.Status.startsWith('Verified')) {
+          skipped.push({
+            source: path.relative(repoRoot, sourcePath),
+            topic: row.Topic || row.Question_ID,
+            reason: row.Status || 'Unverified',
+          });
+          continue;
+        }
+
+        cards.push(windowingCsvQuestionSetCard(row, sourcePath));
+      }
+    } else if (hasColumns(headers, activatorCsvQuestionSetColumns)) {
+      const activatorRows = csvRowsToObjects(rows, sourcePath, activatorCsvQuestionSetColumns);
+      for (const row of activatorRows) {
+        if (!row.Status.startsWith('Verified')) {
+          skipped.push({
+            source: path.relative(repoRoot, sourcePath),
+            topic: row.Topic || row.Question_ID,
+            reason: row.Status || 'Unverified',
+          });
+          continue;
+        }
+
+        cards.push(activatorCsvQuestionSetCard(row, sourcePath));
+      }
+    } else if (hasColumns(headers, monitoringHubActivatorCsvQuestionSetColumns)) {
+      const monitoringHubActivatorRows = csvRowsToObjects(rows, sourcePath, monitoringHubActivatorCsvQuestionSetColumns);
+      for (const row of monitoringHubActivatorRows) {
+        if (!row.Status.startsWith('Verified')) {
+          skipped.push({
+            source: path.relative(repoRoot, sourcePath),
+            topic: row.Topic || row.Question_ID,
+            reason: row.Status || 'Unverified',
+          });
+          continue;
+        }
+
+        cards.push(monitoringHubActivatorCsvQuestionSetCard(row, sourcePath));
       }
     } else {
       throw new Error(`${path.relative(repoRoot, sourcePath)} does not match a supported CSV question-set schema`);
